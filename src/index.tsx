@@ -1,14 +1,64 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
+import React from "react";
+import ReactDOM from "react-dom";
+import {
+  theme,
+  ThemeProvider,
+  CSSReset,
+  ColorModeProvider,
+} from "@chakra-ui/core";
+import { Provider } from "react-redux";
+import store from "./store";
+import App from "./App";
+import * as serviceWorker from "./serviceWorker";
+
+if (process.env.NODE_ENV === "development") {
+  const whyDidYouRender = require("@welldone-software/why-did-you-render");
+  whyDidYouRender(React, {
+    trackAllPureComponents: true,
+    trackHooks: true,
+  });
+}
+
+const customTheme = {
+  ...theme,
+  variantColors: [
+    "gray",
+    "red",
+    "orange",
+    "yellow",
+    "green",
+    "teal",
+    "blue",
+    "cyan",
+    "purple",
+    "pink",
+  ],
+  light: {
+    bg: theme.colors.gray[100],
+    borderColor: theme.colors.gray[400],
+    paletteNum: 500,
+    inversePaletteNum: 100,
+  },
+  dark: {
+    bg: theme.colors.gray[600],
+    borderColor: theme.colors.gray[700],
+    paletteNum: 200,
+    inversePaletteNum: 700,
+  },
+};
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Provider store={store}>
+      <ThemeProvider theme={customTheme}>
+        <CSSReset />
+        <ColorModeProvider>
+          <App />
+        </ColorModeProvider>
+      </ThemeProvider>
+    </Provider>
   </React.StrictMode>,
-  document.getElementById('root')
+  document.getElementById("root")
 );
 
 // If you want your app to work offline and load faster, you can change
