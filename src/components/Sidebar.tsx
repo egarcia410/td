@@ -3,8 +3,13 @@ import { useColorMode, useTheme, Stack } from "@chakra-ui/core";
 import Controls from "./Controls";
 import Details from "./Details";
 import TabSection from "./TabSection";
+import { Game } from "../entities";
 
-const Sidebar = () => {
+interface ISideBarProps {
+  game: Game;
+}
+
+const Sidebar: React.FC<ISideBarProps> = ({ game }) => {
   const theme: any = useTheme();
   const { colorMode } = useColorMode();
 
@@ -15,9 +20,9 @@ const Sidebar = () => {
       borderLeftWidth="0.25rem"
       spacing="1rem"
     >
-      <Controls p="0.5rem" />
-      <Details />
-      <TabSection />
+      <Controls game={game} p="0.5rem" />
+      <Details game={game} />
+      <TabSection game={game} />
     </Stack>
   );
 };

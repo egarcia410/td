@@ -1,40 +1,59 @@
-import React, { useState } from "react";
+import React, { useState, memo, useEffect } from "react";
 import { Flex, IconButton } from "@chakra-ui/core";
-import { FaPlay, FaPause, FaBackward, FaForward } from "react-icons/fa";
-import { useTypedSelector } from "../store";
+import { FaPlay, FaPause } from "react-icons/fa";
+import { useTypedSelector } from "../hooks/useTypedSelector";
+import { GameStatusEnum } from "../types/game";
+import { Game } from "../entities";
 
-const PlayControls = () => {
-  const [hasStart, setHasStart] = useState(false);
+interface IPlayControlsProps {
+  game: Game;
+}
+
+const PlayControls: React.FC<IPlayControlsProps> = ({ game }) => {
   const variantColor = useTypedSelector((state) => state.settings.variantColor);
+  const [{ status }, setGame] = useState({ ...game });
+
+  useEffect(() => {
+    game.addListener({
+      valuesToWatch: ["status"],
+      trigger: setGame,
+    });
+  }, [game]);
 
   const onToggleGameState = () => {
-    setHasStart((val) => !val);
+    const newGameStatus =
+      status === GameStatusEnum.STARTED
+        ? GameStatusEnum.PAUSED
+        : GameStatusEnum.STARTED;
+    game.updateGameStatus(newGameStatus);
   };
 
   return (
     <Flex justify="center">
-      <IconButton
+      {/* <IconButton
         icon={FaBackward}
         variant="solid"
         aria-label="decrease game speed"
         variantColor={variantColor}
-      />
+      /> */}
       <IconButton
-        icon={hasStart ? FaPause : FaPlay}
+        icon={status === GameStatusEnum.STARTED ? FaPause : FaPlay}
         onClick={() => onToggleGameState()}
         variant="solid"
-        aria-label={hasStart ? "Pause game" : "Start game"}
+        aria-label={
+          status === GameStatusEnum.STARTED ? "Pause game" : "Start game"
+        }
         m="0 0.5rem"
         variantColor={variantColor}
       />
-      <IconButton
+      {/* <IconButton
         icon={FaForward}
         variant="solid"
         aria-label="increase game speed"
         variantColor={variantColor}
-      />
+      /> */}
     </Flex>
   );
 };
 
-export default PlayControls;
+export default memo(PlayControls);

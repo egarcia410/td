@@ -11,10 +11,16 @@ import {
 } from "@chakra-ui/core";
 import { MdGroupWork } from "react-icons/md";
 import { GiLightBackpack } from "react-icons/gi";
-import { FaStore, FaTrophy } from "react-icons/fa";
-import { useTypedSelector } from "../store";
+import { FaStore } from "react-icons/fa";
+import PartyTowers from "./PartyTowers";
+import { useTypedSelector } from "../hooks/useTypedSelector";
+import { Game } from "../entities";
 
-const TabSection = () => {
+interface ITabSectionProps {
+  game: Game;
+}
+
+const TabSection: React.FC<ITabSectionProps> = ({ game }) => {
   const theme: any = useTheme();
   const { colorMode } = useColorMode();
   const { paletteNum } = theme[colorMode];
@@ -57,30 +63,16 @@ const TabSection = () => {
         >
           <Box as={FaStore} size="2rem" />
         </Tab>
-        <Tab
-          color={theme[colorMode].borderColor}
-          borderBottomColor={`${theme[colorMode].borderColor}`}
-          borderBottomWidth="0.15rem"
-          _selected={{
-            color: vColor,
-            borderBottomColor: vColor,
-          }}
-        >
-          <Box as={FaTrophy} size="2rem" />
-        </Tab>
       </TabList>
       <TabPanels>
         <TabPanel>
-          <p>one!</p>
+          <PartyTowers game={game} />
         </TabPanel>
         <TabPanel>
           <p>two!</p>
         </TabPanel>
         <TabPanel>
           <p>three!</p>
-        </TabPanel>
-        <TabPanel>
-          <p>four!</p>
         </TabPanel>
       </TabPanels>
     </Tabs>

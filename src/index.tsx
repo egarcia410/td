@@ -11,14 +11,6 @@ import store from "./store";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 
-if (process.env.NODE_ENV === "development") {
-  const whyDidYouRender = require("@welldone-software/why-did-you-render");
-  whyDidYouRender(React, {
-    trackAllPureComponents: true,
-    trackHooks: true,
-  });
-}
-
 const customTheme = {
   ...theme,
   variantColors: [

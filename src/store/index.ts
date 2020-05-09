@@ -1,6 +1,5 @@
 import { combineReducers, createStore } from "redux";
-import { TypedUseSelectorHook, useSelector } from "react-redux";
-import settingsReducer, { ISettingsState } from "./settings/reducers";
+import settingsReducer, { ISettingsState } from "./settings/reducer";
 
 export interface RootState {
   settings: ISettingsState;
@@ -11,7 +10,5 @@ const rootReducer = combineReducers({
 });
 
 const store = createStore(rootReducer);
-
-export const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
 
 export default store;
