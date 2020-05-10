@@ -17,6 +17,7 @@ import {
   ModalBody,
   Box,
   PseudoBox,
+  Text,
 } from "@chakra-ui/core";
 import Board from "./Board";
 import Sidebar from "./Sidebar";
@@ -106,10 +107,14 @@ const Game = () => {
         <ModalOverlay />
         <ModalContent color="white" borderRadius="0.25rem">
           <ModalHeader textAlign="center" color="gray.400">
-            Select 2
+            <Text fontSize="xl">Select 2</Text>
           </ModalHeader>
           <ModalBody pb={6}>
-            <Grid templateColumns="repeat(3, 1fr)" gap="1rem">
+            <Grid
+              templateColumns="repeat(3, 1fr)"
+              gap="1rem"
+              templateRows="8rem"
+            >
               {starters!.map((starter, id) => {
                 const { component } = starter;
                 const isSelected = selectedStarters.includes(starter.baseId);

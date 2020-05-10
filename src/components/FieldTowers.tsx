@@ -22,20 +22,19 @@ const FieldTowers: React.FC<IFieldTowersProps> = ({ game }) => {
       fieldTowers.forEach(({ component, fieldCellId }, index) => {
         const Comp = component;
         const { width, height, left, top } = fieldCellsBounds![fieldCellId];
-        const size = Math.min(width, height);
         fTowers.push(
           <Grid
             id={`${index}`}
             key={index}
-            w={`${size}px`}
-            h={`${size}px`}
+            w={`${width}px`}
+            h={`${height}px`}
             position="absolute"
             top={`${top}px`}
             left={`${left}px`}
             justifyContent="center"
             alignContent="center"
           >
-            <Box as={Comp} />
+            <Box as={Comp} w="100%" h="100%" />
           </Grid>
         );
       });

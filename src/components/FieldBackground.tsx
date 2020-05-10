@@ -27,9 +27,16 @@ const FieldBackground: React.FC<IFieldBackgroundProps> = ({ game }) => {
   const renderFieldCells = useMemo(() => {
     const fieldCells = [];
     for (let i = 0; i < 100; i++) {
-      const color = game.pathWay.includes(i) ? "#FEB054" : "#00ffa2";
+      const isPathWay = game.pathWay.includes(i);
+      const color = isPathWay ? "#FEB054" : "#00ffa2";
       fieldCells.push(
-        <Box id={`field-bg-cell-${i}`} ref={fieldCellRefCB} key={i} bg={color}>
+        <Box
+          id={`field-bg-cell-${i}`}
+          ref={fieldCellRefCB}
+          key={i}
+          bg={color}
+          border={!isPathWay ? "1px solid #48bb78" : ""}
+        >
           {i}
         </Box>
       );

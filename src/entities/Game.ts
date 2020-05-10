@@ -14,6 +14,7 @@ import {
   TerrainEnum,
   RarityEnum,
   IBaseTower,
+  DirectionEnum,
 } from "../types/tower";
 import { IFieldCellEl } from "../types/board";
 import { getBaseTowers, allBaseTowers } from "../utils/baseTowers";
@@ -33,7 +34,6 @@ export class Game {
   waveNumber: number;
   partyTowers: Map<string, IPartyTower>;
   fieldTowers: Map<string, IFieldTower>;
-  bulletId: number;
   bullets: {
     id: string;
     coords: { x: number; y: number };
@@ -68,9 +68,8 @@ export class Game {
     this.waveNumber = 1;
     this.partyTowers = new Map();
     this.fieldTowers = new Map();
-    this.bulletId = 0;
     this.bullets = [];
-    this.enemiesPerWave = [20, 20, 20, 20, 20, 20, 20, 20, 20, 20];
+    this.enemiesPerWave = [1, 20, 20, 20, 20, 20, 20, 20, 20, 20];
     this.startTime = 0;
     this.enemyDelay = 2000;
     this.bulletCount = 25;
@@ -99,9 +98,21 @@ export class Game {
       93,
       94,
       95,
-      96,
-      97,
-      98,
+      85,
+      75,
+      65,
+      55,
+      45,
+      35,
+      36,
+      37,
+      38,
+      48,
+      58,
+      68,
+      78,
+      88,
+      89,
       99,
     ];
   }
@@ -145,14 +156,15 @@ export class Game {
         id: uuidv4(),
         coords: { x: 0, y: 0 },
         currentPathWayIndex: 0,
-        speed: generateOtherStat(baseSpeed, 1),
-        health: generateHealthStat(baseHealth, 1),
-        attack: generateOtherStat(baseAttack, 1),
+        speed: generateOtherStat(baseSpeed, 10),
+        health: generateHealthStat(baseHealth, 10),
+        attack: generateOtherStat(baseAttack, 10),
         baseSpeed,
         baseHealth,
         baseAttack,
         delay: this.enemyDelay * i,
         isActive,
+        direction: DirectionEnum.NONE,
         ...rest,
       };
       this.enemies = [...this.enemies, enemy];
@@ -326,6 +338,24 @@ export class Game {
     this.forceUpdate(["partyTowers"]);
   };
 
+  getAdjustedAngle(angle: number, direction: DirectionEnum) {
+    if (
+      angle < 0 &&
+      (direction === DirectionEnum.SOUTH || direction === DirectionEnum.NORTH)
+    ) {
+      return angle - 0.2;
+    }
+    if (angle > 0) {
+      if (direction === DirectionEnum.SOUTH) {
+        return angle + 0.2;
+      }
+      if (direction === DirectionEnum.NORTH) {
+        return angle - 0.2;
+      }
+    }
+    return angle;
+  }
+
   animate() {
     this.initializeStartTime();
     this.animateEnemiesMovement();
@@ -378,8 +408,11 @@ export class Game {
       const pathY = this.fieldCellsBounds![
         this.pathWay[currentPathWayIndex + 1]
       ].y;
-      const diffX = pathX - enemy.coords.x;
-      const diffY = pathY - enemy.coords.y;
+      let diffX = pathX - enemy.coords.x;
+      let diffY = pathY - enemy.coords.y;
+      if (enemy.direction === DirectionEnum.SOUTH) {
+        diffY = diffY + 100;
+      }
       const angle = Math.atan2(diffY, diffX);
 
       if (performance.now() - this.startTime > delay) {
@@ -401,6 +434,23 @@ export class Game {
       if (distance < sumOfRadii) {
         enemy.currentPathWayIndex = currentPathWayIndex + 1;
       }
+
+      const currentPathWay = this.pathWay[enemy.currentPathWayIndex];
+      const nextPathWay = this.pathWay[enemy.currentPathWayIndex + 1];
+
+      if (currentPathWay + 1 === nextPathWay) {
+        enemy.direction = DirectionEnum.EAST;
+      }
+      if (currentPathWay - 1 === nextPathWay) {
+        enemy.direction = DirectionEnum.WEST;
+      }
+      if (currentPathWay + 10 === nextPathWay) {
+        enemy.direction = DirectionEnum.SOUTH;
+      }
+      if (currentPathWay - 10 === nextPathWay) {
+        enemy.direction = DirectionEnum.NORTH;
+      }
+
       return (
         enemy.coords.x < this.boardBounds!.width &&
         enemy.coords.y < this.boardBounds!.height
@@ -437,13 +487,21 @@ export class Game {
           return distance < sumOfRadii;
         });
         if (enemyInRange) {
-          // const bulletId = this.bulletId;
           const coords = { ...centerCoords };
           const diffX = enemyInRange.coords.x - centerCoords.x;
           const diffY = enemyInRange.coords.y - centerCoords.y;
           const angle = Math.atan2(diffY, diffX);
-          const bullet = { id: uuidv4(), coords, angle, towerId: id };
-          // this.bulletId = this.bulletId + 1;
+          // Adjust bullet to shoot more towards the enemy's future position
+          const adjustedAngled = this.getAdjustedAngle(
+            angle,
+            enemyInRange.direction
+          );
+          const bullet = {
+            id: uuidv4(),
+            coords,
+            angle: adjustedAngled,
+            towerId: id,
+          };
           this.bullets = [...this.bullets, bullet];
           fTower.lastShotTime = performance.now();
         }
@@ -454,9 +512,6 @@ export class Game {
   animateBulletMovements() {
     this.bullets = this.bullets.filter((bullet) => {
       const { towerId, angle, coords, id } = bullet;
-      // const { speed, attack, attackSize, attackColor } = this.fieldTowers.get(
-      //   towerId
-      // )!;
       const fieldTower = this.fieldTowers.get(towerId)!;
       const { speed, attack, attackSize, attackColor } = fieldTower;
       const { width, height } = this.boardBounds!;
@@ -474,6 +529,7 @@ export class Game {
       // TODO: Adjust speed attributes
       coords.x += speed * Math.cos(angle);
       coords.y += speed * Math.sin(angle);
+
       assignedBulletEl!.style.top = `${coords.y}px`;
       assignedBulletEl!.style.left = `${coords.x}px`;
       assignedBulletEl!.style.width = `${attackSize}px`;

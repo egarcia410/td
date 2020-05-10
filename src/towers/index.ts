@@ -5,6 +5,8 @@ import Squirtle from "./Squirtle";
 import Venusaur from "./Venusaur";
 import Charmeleon from "./Charmeleon";
 import Charizard from "./Charizard";
+import Wartortle from "./Wartortle";
+import Blastoise from "./Blastoise";
 
 export {
   Bulbasaur,
@@ -14,4 +16,6 @@ export {
   Venusaur,
   Charmeleon,
   Charizard,
+  Wartortle,
+  Blastoise,
 };

@@ -29,18 +29,17 @@ const Enemies: React.FC<IEnemiesProps> = ({ game }) => {
         enemies.map(({ currentPathWayIndex, component, id }) => {
           const Comp = component;
           const { width, height } = fieldCellsBounds![currentPathWayIndex];
-          const size = Math.min(width, height);
           return (
             <Grid
               ref={enemyRefCB}
               id={`enemy-${id}`}
               key={id}
-              w={`${size}px`}
-              h={`${size}px`}
+              w={`${width}px`}
+              h={`${height}px`}
               position="absolute"
               hidden={true}
             >
-              <Box as={Comp} />
+              <Box as={Comp} w="100%" h="100%" />
             </Grid>
           );
         })}
@@ -49,40 +48,3 @@ const Enemies: React.FC<IEnemiesProps> = ({ game }) => {
 };
 
 export default memo(Enemies);
-
-// import React, { memo, useState, useCallback } from "react";
-// import { Game } from "../entities";
-// import { Box } from "@chakra-ui/core";
-
-// interface IEnemiesProps {
-//   game: Game;
-// }
-
-// const Enemies: React.FC<IEnemiesProps> = ({ game }) => {
-//   const [{ enemyCount, enemies }] = useState(game);
-
-//   const enemyRefCB = useCallback((enemyEl: HTMLDivElement) => {
-//     game.addUnassignedEnemy(enemyEl);
-//   }, []);
-
-//   const renderBullets = () => {
-//     const enemies: any = [];
-//     for (let i = 0; i < enemyCount; i++) {
-//       enemies.push(
-//         <Box
-//           key={`enemy-${i}`}
-//           id={`enemy-${i}`}
-//           ref={enemyRefCB}
-//           position="absolute"
-//         >
-//           <Box as={Comp} />
-//         </Box>
-//       );
-//     }
-//     return enemies;
-//   };
-
-//   return <>{renderBullets()}</>;
-// };
-
-// export default memo(Enemies);

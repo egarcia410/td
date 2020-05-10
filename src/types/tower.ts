@@ -24,6 +24,14 @@ export enum RarityEnum {
   RARE = "RARE",
 }
 
+export enum DirectionEnum {
+  NONE = "NONE",
+  NORTH = "NORTH",
+  EAST = "EAST",
+  SOUTH = "SOUTH",
+  WEST = "WEST",
+}
+
 export interface IBaseTower {
   baseId: number;
   component: React.FC<any>;
@@ -56,6 +64,7 @@ export interface IEnemyTower extends ITower {
   currentPathWayIndex: number;
   delay: number;
   isActive: boolean;
+  direction: DirectionEnum;
 }
 
 export interface IPartyTower extends ITower {}
