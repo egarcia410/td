@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Grid, Box, Flex } from "@chakra-ui/core";
+import { Grid, Box, Flex, Text } from "@chakra-ui/core";
+import { GiPocketBow, GiBroadsword } from "react-icons/gi";
+import { IoIosSpeedometer } from "react-icons/io";
 import { Game } from "../entities";
 
 interface IPartyTowersProps {
@@ -21,44 +23,69 @@ const PartyTowers: React.FC<IPartyTowersProps> = ({ game }) => {
   };
 
   const renderPartyTowers = () => {
-    const partyTowers: any = [];
-    game.partyTowers.forEach(({ id, component, level }) => {
-      partyTowers.push(
-        <Box key={id} position="relative">
-          <Box
-            id={`${id}`}
-            draggable
-            onDragStart={onDragStart}
-            cursor="pointer"
+    const pTowers: any = [];
+    partyTowers.forEach(
+      ({ id, component, level, range, attack, speed, name, attackColor }) => {
+        pTowers.push(
+          <Grid
+            key={id}
+            templateColumns="5rem auto"
+            templateRows="6rem"
+            background={attackColor}
+            padding="0.15rem"
+            borderRadius="0.25rem"
+            border="0.15rem solid #9BA9BB"
           >
-            <Box as={component} />
-          </Box>
-          <Flex
-            position="absolute"
-            top="-10px"
-            right="-15px"
-            bg="blue.400"
-            color="gray.200"
-            borderRadius="1rem"
-            justifyContent="center"
-            alignItems="center"
-            p="0.2rem 0.6rem"
-            fontSize="0.75rem"
-          >
-            {level}
-          </Flex>
-        </Box>
-      );
-    });
-    return partyTowers;
+            <Box
+              id={`${id}`}
+              draggable
+              onDragStart={onDragStart}
+              cursor="pointer"
+              padding="0.15rem"
+            >
+              <Box as={component} w="100%" h="100%" />
+            </Box>
+            <Grid
+              templateColumns="auto"
+              templateRows="repeat(4, 1fr)"
+              gap="0.15rem"
+            >
+              <Flex color="white" alignItems="center" fontSize="1rem">
+                <Text fontSize="xs" fontWeight="600" whiteSpace="nowrap">
+                  Lvl. {level}
+                </Text>
+              </Flex>
+              <Flex color="white" alignItems="center" fontSize="1rem">
+                <Box as={GiPocketBow} paddingRight="0.15rem"></Box>
+                <Text fontSize="xs" fontWeight="600">
+                  {range}
+                </Text>
+              </Flex>
+              <Flex color="white" alignItems="center" fontSize="1rem">
+                <Box as={GiBroadsword} paddingRight="0.15rem"></Box>
+                <Text fontSize="xs" fontWeight="600">
+                  {attack}
+                </Text>
+              </Flex>
+              <Flex color="white" alignItems="center" fontSize="1rem">
+                <Box as={IoIosSpeedometer} paddingRight="0.15rem"></Box>
+                <Text fontSize="xs" fontWeight="600">
+                  {speed}
+                </Text>
+              </Flex>
+            </Grid>
+            <Grid color="white" column="1 / span 2" textAlign="center">
+              <Text>{name}</Text>
+            </Grid>
+          </Grid>
+        );
+      }
+    );
+    return pTowers;
   };
 
   return (
-    <Grid
-      templateColumns="repeat(2, minmax(80px,125px))"
-      gap="2rem"
-      padding="1.25rem"
-    >
+    <Grid templateColumns="repeat(2, 1fr)" gap="0.25rem" padding="0.5rem">
       {renderPartyTowers()}
     </Grid>
   );

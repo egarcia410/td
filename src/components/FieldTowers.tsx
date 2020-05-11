@@ -1,6 +1,6 @@
 import React, { memo, useState, useEffect } from "react";
 import { Game } from "../entities";
-import { Box, Grid } from "@chakra-ui/core";
+import { Box, Grid, PseudoBox } from "@chakra-ui/core";
 
 interface IFieldTowersProps {
   game: Game;
@@ -19,9 +19,11 @@ const FieldTowers: React.FC<IFieldTowersProps> = ({ game }) => {
   const renderFieldTowers = () => {
     const fTowers: any = [];
     fieldCellsBounds &&
-      fieldTowers.forEach(({ component, fieldCellId }, index) => {
+      fieldTowers.forEach(({ component, fieldCellId, range }, index) => {
         const Comp = component;
         const { width, height, left, top } = fieldCellsBounds![fieldCellId];
+        const extendedRange = width * range;
+        const bulletRange = (width / 2 + extendedRange) * 2;
         fTowers.push(
           <Grid
             id={`${index}`}
@@ -34,7 +36,13 @@ const FieldTowers: React.FC<IFieldTowersProps> = ({ game }) => {
             justifyContent="center"
             alignContent="center"
           >
-            <Box as={Comp} w="100%" h="100%" />
+            <Box as={Comp} w="100%" h="100%" position="absolute" />
+            <PseudoBox
+              w={bulletRange}
+              h={bulletRange}
+              borderRadius="25rem"
+              _hover={{ bg: "gray.400", opacity: 0.5 }}
+            />
           </Grid>
         );
       });
