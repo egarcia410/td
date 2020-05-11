@@ -8,6 +8,9 @@ interface IFieldTowersProps {
 
 const FieldTowers: React.FC<IFieldTowersProps> = ({ game }) => {
   const [{ fieldCellsBounds, fieldTowers }, setGame] = useState(game);
+  const [isRangeActive, setIsRangeActive] = useState<Map<string, boolean>>(
+    new Map()
+  );
 
   useEffect(() => {
     game.addListener({
@@ -16,14 +19,22 @@ const FieldTowers: React.FC<IFieldTowersProps> = ({ game }) => {
     });
   }, [game]);
 
+  const onDisplayRange = (id: string) => {
+    const newRangeActive = new Map(isRangeActive);
+    const isActive = newRangeActive.get(id) || false;
+    newRangeActive.set(id, !isActive);
+    setIsRangeActive(newRangeActive);
+  };
+
   const renderFieldTowers = () => {
     const fTowers: any = [];
     fieldCellsBounds &&
-      fieldTowers.forEach(({ component, fieldCellId, range }, index) => {
+      fieldTowers.forEach(({ component, fieldCellId, range, id }, index) => {
         const Comp = component;
         const { width, height, left, top } = fieldCellsBounds![fieldCellId];
         const extendedRange = width * range;
         const bulletRange = (width / 2 + extendedRange) * 2;
+        const isActive = isRangeActive.get(id) || false;
         fTowers.push(
           <Grid
             id={`${index}`}
@@ -36,13 +47,24 @@ const FieldTowers: React.FC<IFieldTowersProps> = ({ game }) => {
             justifyContent="center"
             alignContent="center"
           >
-            <Box as={Comp} w="100%" h="100%" position="absolute" />
-            <PseudoBox
-              w={bulletRange}
-              h={bulletRange}
-              borderRadius="25rem"
-              _hover={{ bg: "gray.400", opacity: 0.5 }}
+            <Box
+              as={Comp}
+              w="100%"
+              h="100%"
+              position="absolute"
+              onClick={() => onDisplayRange(id)}
+              cursor="pointer"
             />
+            {isActive && (
+              <PseudoBox
+                w={bulletRange}
+                h={bulletRange}
+                borderRadius="30rem"
+                bg="gray.400"
+                opacity={0.5}
+                zIndex={-1}
+              />
+            )}
           </Grid>
         );
       });

@@ -152,13 +152,15 @@ export class Game {
       const { baseSpeed, baseHealth, baseAttack, ...rest } = baseTowersByRarity[
         randomIndex
       ];
+      const health = generateHealthStat(baseHealth, 10);
       const enemy = {
         id: uuidv4(),
         coords: { x: 0, y: 0 },
         currentPathWayIndex: 0,
         speed: generateOtherStat(baseSpeed, 10),
-        health: generateHealthStat(baseHealth, 10),
+        health,
         attack: generateOtherStat(baseAttack, 10),
+        maxHealth: health,
         baseSpeed,
         baseHealth,
         baseAttack,
@@ -589,9 +591,13 @@ export class Game {
           }
           const struckEnemy = this.enemies[struckEnemyIndex];
           struckEnemy.health -= attack;
+          const healthPercentage =
+            (struckEnemy.health / struckEnemy.maxHealth) * 100;
+          const assignedEnemyEl = this.assignedEnemies.get(struckEnemy.id)!;
+          const healthBar = assignedEnemyEl.children[1].children[0] as any;
+          healthBar.style.width = `${healthPercentage}%`;
           if (struckEnemy.health <= 0) {
             this.enemies.splice(struckEnemyIndex, 1);
-            this.enemies.filter((enemy) => enemy.id !== struckEnemy.id);
             if (!this.enemies.length) {
               if (this.waveNumber === 10) {
                 this.updateGameStatus(GameStatusEnum.SUCCESS_GAME_OVER);

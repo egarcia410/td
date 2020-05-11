@@ -65,6 +65,7 @@ export interface IEnemyTower extends ITower {
   delay: number;
   isActive: boolean;
   direction: DirectionEnum;
+  maxHealth: number;
 }
 
 export interface IPartyTower extends ITower {}
