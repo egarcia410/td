@@ -36,9 +36,7 @@ const FieldBackground: React.FC<IFieldBackgroundProps> = ({ game }) => {
           key={i}
           bg={color}
           border={!isPathWay ? "1px solid #48bb78" : ""}
-        >
-          {i}
-        </Box>
+        />
       );
     }
     return fieldCells;
