@@ -24,12 +24,9 @@ const Field: React.FC<IFieldProps> = ({ game }) => {
     const fieldCellId = y < 1 ? x : +`${y}${x}`;
     const fieldCellEl = cells[fieldCellId];
     if (id === "pokeball") {
-      game.attemptCapture(fieldCellId);
+      game.attemptCapture(fieldCellEl);
     } else {
-      // Field cell is not occupied
-      if (!fieldCellEl.isOccupied) {
-        game.addFieldTower(id, fieldCellEl);
-      }
+      game.addFieldTower(id, fieldCellEl);
     }
   };
 

@@ -25,7 +25,7 @@ export class Board {
     this.boardEl = null;
     this.cells = [];
     this.path = [];
-    this.obstaclePercentage = 35;
+    this.obstaclePercentage = 25;
     this.numOfCols = 10;
     this.numOfRows = 10;
     this.numOfCells = this.numOfCols * this.numOfRows;
@@ -59,7 +59,7 @@ export class Board {
       // Default terrain color to field colors
       cell.cellEl.style.backgroundColor = this.terrainColors.field.primary;
       cell.cellEl.style.border = `1px solid ${this.terrainColors.field.secondary}`;
-      cell.resetCell();
+      cell.resetHard();
       // Randomize field with obstacles
       if (index !== 0 && index !== this.cells.length - 1) {
         const isOccupied =

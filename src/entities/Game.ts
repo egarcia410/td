@@ -52,7 +52,7 @@ export class Game {
     this.baseTowers = getBaseTowers();
     this.partyTowers = new Map();
     this.fieldTowers = new Map();
-    this.enemiesPerWave = [1, 1, 2, 2, 1, 1, 3, 3, 3, 3];
+    this.enemiesPerWave = [2, 2, 2, 2, 2, 2, 3, 3, 3, 3];
     this.currentWaveNumber = 1;
     this.enemies = [];
     this.bullets = [];
@@ -153,10 +153,53 @@ export class Game {
   addFieldTower = (towerId: string, cellRef: Cell) => {
     const hasBeenPlaced = this.fieldTowers.has(towerId);
     if (!hasBeenPlaced) {
-      const partyTowerRef = this.partyTowers.get(towerId)!;
-      cellRef.isOccupied = true;
-      this.fieldTowers.set(towerId, new FieldTower(partyTowerRef, cellRef));
-      this.dispatch(["fieldTowers"]);
+      if (this.status === GameStatusEnum.IDLE) {
+        this.board.path.forEach((pathCell) => {
+          pathCell.isOccupied = false;
+          pathCell.cellEl.style.backgroundColor = this.board.terrainColors.field.primary;
+          pathCell.cellEl.style.border = `1px solid ${this.board.terrainColors.field.secondary}`;
+        });
+        cellRef.isOccupied = true;
+        this.board.cells.forEach((cell) => {
+          cell.resetPartial();
+          if (cell.isOccupied) {
+            cell.cellEl.style.backgroundColor = this.board.terrainColors.obstacle.primary;
+            cell.cellEl.style.border = `1px solid ${this.board.terrainColors.obstacle.secondary}`;
+          }
+        });
+        this.board.generatePath();
+        if (this.board.path.length) {
+          const partyTowerRef = this.partyTowers.get(towerId)!;
+          this.fieldTowers.set(towerId, new FieldTower(partyTowerRef, cellRef));
+          this.fieldTowers.forEach(({ cellRef }) => {
+            cellRef.cellEl.style.backgroundColor = this.board.terrainColors.field.primary;
+            cellRef.cellEl.style.border = `1px solid ${this.board.terrainColors.field.secondary}`;
+          });
+          this.dispatch(["fieldTowers", "path"]);
+        } else {
+          cellRef.isOccupied = false;
+          this.board.cells.forEach((cell) => {
+            cell.resetPartial();
+            if (cell.isOccupied) {
+              cell.cellEl.style.backgroundColor = this.board.terrainColors.obstacle.primary;
+              cell.cellEl.style.border = `1px solid ${this.board.terrainColors.obstacle.secondary}`;
+            }
+          });
+          this.board.generatePath();
+          this.fieldTowers.forEach(({ cellRef }) => {
+            cellRef.cellEl.style.backgroundColor = this.board.terrainColors.field.primary;
+            cellRef.cellEl.style.border = `1px solid ${this.board.terrainColors.field.secondary}`;
+          });
+        }
+      } else {
+        // If game status is ongoing and cell is not occupied, add field tower
+        if (!cellRef.isOccupied) {
+          const partyTowerRef = this.partyTowers.get(towerId)!;
+          cellRef.isOccupied = true;
+          this.fieldTowers.set(towerId, new FieldTower(partyTowerRef, cellRef));
+          this.dispatch(["fieldTowers"]);
+        }
+      }
     }
   };
 
@@ -165,7 +208,9 @@ export class Game {
   };
 
   addEnemyElement = (enemyEl: HTMLDivElement) => {
-    this.unassignedEnemies.push(enemyEl);
+    if (enemyEl) {
+      this.unassignedEnemies.push(enemyEl);
+    }
   };
 
   addFieldCellElement = (fieldCellEl: HTMLDivElement) => {
@@ -248,19 +293,40 @@ export class Game {
     this.dispatch(["gameTimer"]);
   };
 
-  attemptCapture = (cellId: number) => {
-    const enemy = this.enemies.find((enemy) => {
-      return enemy.currentPathCell.id === cellId;
+  attemptCapture = (cellRef: Cell) => {
+    const capturedEnemy = this.enemies.find((enemy) => {
+      const enemyElement = enemy.enemyElement!;
+      const enemyBounds = enemyElement.getBoundingClientRect();
+      const cellBounds = cellRef.cellEl.getBoundingClientRect();
+      const sumOfRadii = cellBounds.width / 4 + enemyBounds.width / 4;
+      const centerEnemyCoords = {
+        x: enemy.coords.x + enemyBounds.width / 2,
+        y: enemy.coords.y + enemyBounds.height / 2,
+      };
+      const centerCoords = {
+        x: cellBounds.left + cellBounds.width / 2,
+        y: cellBounds.top + cellBounds.height / 2,
+      };
+      const diffX = centerEnemyCoords.x - centerCoords.x;
+      const diffY = centerEnemyCoords.y - centerCoords.y;
+      const distance = Math.sqrt(Math.pow(diffX, 2) + Math.pow(diffY, 2));
+      return distance < sumOfRadii;
     });
-    if (enemy) {
-      const { maxHealth, health, baseId, level, enemyElement, id } = enemy;
+    if (capturedEnemy) {
+      const {
+        maxHealth,
+        health,
+        baseId,
+        level,
+        enemyElement,
+        id,
+      } = capturedEnemy;
       const randomValue = Math.floor(Math.random() * 255);
       const result = (maxHealth * 255 * 4) / (health * 12);
       if (result >= randomValue) {
         this.addPartyTower(baseId, level);
         if (enemyElement) {
           enemyElement.hidden = true;
-          this.unassignedEnemies.push(enemyElement);
           this.enemies = this.enemies.filter((enemy) => enemy.id !== id);
         }
       }
@@ -286,13 +352,12 @@ export class Game {
       const { path } = this.board;
       // Assign enemyElement
       if (!enemy.enemyElement) {
-        const unassignedEnemy = this.unassignedEnemies.pop()!;
+        const unassignedEnemy = this.unassignedEnemies.shift()!;
         enemy.enemyElement = unassignedEnemy;
       }
       // Enemy has reached goal
       if (currentPathWayIndex === path.length - 1) {
         enemy.enemyElement.hidden = true;
-        this.unassignedEnemies.push(enemy.enemyElement);
         this.decrementHealth();
         return false;
       }
@@ -448,7 +513,6 @@ export class Game {
             this.dispatch(["money"]);
             // Remove enemy from active and add back to unassigned
             enemyElement.hidden = true;
-            this.unassignedEnemies.push(enemyElement);
             this.enemies = this.enemies.filter(
               (enemy) => enemy.id !== damagedEnemy.id
             );
@@ -503,10 +567,10 @@ export class Game {
   };
 
   private resetEnemies = () => {
+    this.unassignedEnemies = [];
     this.enemies.forEach(({ enemyElement }) => {
       if (enemyElement) {
         enemyElement.hidden = true;
-        this.unassignedEnemies.push(enemyElement);
       }
     });
     this.enemies = [];

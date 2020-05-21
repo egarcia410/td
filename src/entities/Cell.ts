@@ -18,11 +18,17 @@ export class Cell {
     this.parent = null;
   }
 
-  resetCell = () => {
+  resetHard = () => {
     this.isOccupied = false;
+    this.resetPartial();
+  };
+
+  resetPartial = () => {
     this.GCost = Infinity;
     this.FCost = Infinity;
+    this.HCost = 0;
     this.neighbors = [];
+    this.parent = null;
   };
 
   addHeuristicCost = (endCellBounds: DOMRect) => {

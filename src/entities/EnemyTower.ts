@@ -39,7 +39,7 @@ export class EnemyTower {
     this.currentPathCell = pathCell;
   }
 
-  generateMovementSpeed = () => {
+  private generateMovementSpeed = () => {
     return (this.level * 0.6 + this.baseSpeed * 0.6) / 10;
   };
 }
