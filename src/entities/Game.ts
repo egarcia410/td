@@ -1,365 +1,255 @@
 import { Dispatch } from "react";
-import { cloneDeep } from "lodash";
 import { v4 as uuidv4 } from "uuid";
+import { cloneDeep } from "lodash";
+// Types & Helpers
+import { TerrainEnum, RarityEnum, IBaseTower } from "../types/tower";
 import {
+  RegionsEnum,
   GameStatusEnum,
   ResetTypeEnum,
   IListener,
-  RegionsEnum,
 } from "../types/game";
-import {
-  IEnemyTower,
-  IPartyTower,
-  IFieldTower,
-  TerrainEnum,
-  RarityEnum,
-  IBaseTower,
-  DirectionEnum,
-} from "../types/tower";
-import { IFieldCellEl } from "../types/board";
 import { getBaseTowers, allBaseTowers } from "../utils/baseTowers";
-import { generateHealthStat, generateOtherStat } from "../utils/generateStats";
+import { regionStarters } from "../utils/starters";
+// Entities
+import { EnemyTower } from "./EnemyTower";
+import { Bullet } from "./Bullet";
+import { PartyTower } from "./PartyTower";
+import { FieldTower } from "./FieldTower";
+import { Board } from "./Board";
+import { Cell } from "./Cell";
 
 export class Game {
-  status: GameStatusEnum;
-  prevStatus: GameStatusEnum;
-  enemies: IEnemyTower[];
-  boardEl: HTMLDivElement | null;
-  boardBounds: DOMRect | null;
-  fieldCellsEl: IFieldCellEl[] | null;
-  fieldCellsBounds: DOMRect[] | null;
-  pathWay: number[];
-  health: number;
-  money: number;
-  waveNumber: number;
-  partyTowers: Map<string, IPartyTower>;
-  fieldTowers: Map<string, IFieldTower>;
-  bullets: {
-    id: string;
-    coords: { x: number; y: number };
-    angle: number;
-    towerId: string;
-  }[];
   listeners: Map<string, Dispatch<React.SetStateAction<any>>[]>;
+  status: GameStatusEnum;
+  gameTimer: number;
+  intervalId: number;
+  health: number;
+  terrain: TerrainEnum;
+  board: Board;
+  region: RegionsEnum;
+  starters: any[]; // TODO: Update type definition
+  baseTowers: Map<TerrainEnum, Map<RarityEnum, IBaseTower[]>>; // TODO: Update with BaseTower class instance
+  partyTowers: Map<string, PartyTower>;
+  fieldTowers: Map<string, FieldTower>;
   enemiesPerWave: number[];
-  startTime: number;
-  enemyDelay: number;
-  bulletCount: number;
-  assignedBullets: Map<string, HTMLDivElement>;
+  currentWaveNumber: number;
+  enemies: EnemyTower[];
+  bullets: Bullet[];
   unassignedBullets: HTMLDivElement[];
-  enemyCount: number;
-  assignedEnemies: Map<string, HTMLDivElement>;
   unassignedEnemies: HTMLDivElement[];
-  terrain: TerrainEnum | null;
-  region: RegionsEnum | null;
-  baseTowers: Map<TerrainEnum, Map<RarityEnum, IBaseTower[]>> | null;
-  expNeededToLevel: Map<number, number> | null;
-  constructor() {
-    this.enemies = [];
-    this.status = GameStatusEnum.IDLE;
-    this.prevStatus = GameStatusEnum.IDLE;
+  money: number;
+  constructor(terrain: TerrainEnum, region: RegionsEnum) {
     this.listeners = new Map();
-    this.boardEl = null;
-    this.boardBounds = null;
-    this.fieldCellsEl = null;
-    this.fieldCellsBounds = null;
+    this.status = GameStatusEnum.IDLE;
+    this.gameTimer = 0;
+    this.intervalId = 0;
     this.health = 100;
-    this.money = 50;
-    this.waveNumber = 1;
+    this.terrain = terrain;
+    this.board = new Board(this.terrain);
+    this.region = region;
+    this.starters = regionStarters.get(this.region)!;
+    this.baseTowers = getBaseTowers();
     this.partyTowers = new Map();
     this.fieldTowers = new Map();
-    this.bullets = [];
-    this.enemiesPerWave = [1, 20, 20, 20, 20, 20, 20, 20, 20, 20];
-    this.startTime = 0;
-    this.enemyDelay = 2000;
-    this.bulletCount = 25;
-    this.assignedBullets = new Map();
-    this.unassignedBullets = [];
-    this.enemyCount = 20;
-    this.assignedEnemies = new Map();
-    this.unassignedEnemies = [];
-    this.terrain = null;
-    this.region = null;
-    this.baseTowers = null;
-    this.expNeededToLevel = null;
-    this.pathWay = [
-      0,
-      10,
-      20,
-      30,
-      40,
-      50,
-      60,
-      70,
-      80,
-      90,
-      91,
-      92,
-      93,
-      94,
-      95,
-      85,
-      75,
-      65,
-      55,
-      45,
-      35,
-      36,
-      37,
-      38,
-      48,
-      58,
-      68,
-      78,
-      88,
-      89,
-      99,
-    ];
-  }
-
-  initialize(terrain: TerrainEnum, region: RegionsEnum) {
-    this.terrain = terrain;
-    this.region = region;
-    this.baseTowers = getBaseTowers();
-    this.generateExpNeededToLevel();
-    this.initializeEnemies();
-  }
-
-  generateExpNeededToLevel = () => {
-    const expNeededToLevel = new Map<number, number>();
-    for (let i = 1; i <= 100; i++) {
-      expNeededToLevel.set(i, Math.pow(i, 3));
-    }
-    this.expNeededToLevel = expNeededToLevel;
-  };
-
-  initializeEnemies() {
+    this.enemiesPerWave = [5, 10, 10, 10, 1, 1, 3, 3, 3, 3];
+    this.currentWaveNumber = 1;
     this.enemies = [];
-    for (let i = 0; i < this.enemyCount; i++) {
-      const isActive = i < this.enemiesPerWave[this.waveNumber - 1];
-
-      const rarityVal = Math.floor(Math.random() * 100);
-      const rarity =
-        rarityVal > 95
-          ? RarityEnum.RARE
-          : rarityVal > 80
-          ? RarityEnum.UNCOMMON
-          : RarityEnum.COMMON;
-
-      const baseTowersByTerrain = this.baseTowers!.get(this.terrain!)!;
-      const baseTowersByRarity = baseTowersByTerrain!.get(rarity)!;
-      const randomIndex = Math.floor(Math.random() * baseTowersByRarity.length);
-      const { baseSpeed, baseHealth, baseAttack, ...rest } = baseTowersByRarity[
-        randomIndex
-      ];
-      const health = generateHealthStat(baseHealth, 10);
-      const enemy = {
-        id: uuidv4(),
-        coords: { x: 0, y: 0 },
-        currentPathWayIndex: 0,
-        speed: generateOtherStat(baseSpeed, 10),
-        health,
-        attack: generateOtherStat(baseAttack, 10),
-        maxHealth: health,
-        baseSpeed,
-        baseHealth,
-        baseAttack,
-        delay: this.enemyDelay * i,
-        isActive,
-        direction: DirectionEnum.NONE,
-        ...rest,
-      };
-      this.enemies = [...this.enemies, enemy];
-    }
-    this.forceUpdate(["initializeEnemies"]);
+    this.bullets = [];
+    this.unassignedBullets = [];
+    this.unassignedEnemies = [];
+    this.money = 50;
   }
 
-  addListener(listener: IListener) {
+  addListener = (listener: IListener) => {
     listener.valuesToWatch.forEach((val) => {
       const value = this.listeners.get(val);
       if (value) {
-        this.listeners.set(val, [...value, listener.trigger]);
+        this.listeners.set(val, [...value, listener.update]);
       } else {
-        this.listeners.set(val, [listener.trigger]);
+        this.listeners.set(val, [listener.update]);
       }
     });
-  }
+  };
 
-  addUnassignedBullet(bulletEl: HTMLDivElement) {
-    this.unassignedBullets = [...this.unassignedBullets, bulletEl];
-  }
-
-  addUnassignedEnemy(enemyEl: HTMLDivElement) {
-    this.unassignedEnemies = [...this.unassignedEnemies, enemyEl];
-  }
-
-  forceUpdate(keys: string[]) {
+  dispatch = (keys: string[]) => {
     if (keys) {
       keys.forEach((key) => {
-        const triggers = this.listeners.get(key);
-        if (triggers) {
-          triggers.forEach((trigger: any) => trigger(() => cloneDeep(this)));
+        const updates = this.listeners.get(key);
+        if (updates) {
+          updates.forEach((update: Dispatch<any>) =>
+            update(() => cloneDeep(this))
+          );
         }
       });
     }
-  }
+  };
 
-  addBoardEl(boardEl: HTMLDivElement) {
-    this.boardBounds = boardEl.getBoundingClientRect();
-    this.boardEl = boardEl;
-    this.forceUpdate(["boardBounds"]);
-  }
-
-  updateBoardBounds() {
-    this.boardBounds = this.boardEl
-      ? this.boardEl.getBoundingClientRect()
-      : null;
-    this.forceUpdate(["boardBounds"]);
-  }
-
-  addFieldCells(fieldCellsEl: HTMLDivElement[], fieldCellsBounds: DOMRect[]) {
-    this.fieldCellsBounds = fieldCellsBounds;
-    this.fieldCellsEl = fieldCellsEl;
-    this.forceUpdate(["fieldCellsBounds", "fieldCellsEl"]);
-  }
-
-  updateFieldCellsBounds() {
-    this.fieldCellsBounds = this.fieldCellsEl!.map((fieldCell) => {
-      return fieldCell.getBoundingClientRect();
-    });
-    this.forceUpdate(["fieldCellsBounds"]);
-  }
-
-  updateGameStatus(newStatus: GameStatusEnum) {
-    this.prevStatus = this.status;
-    this.status = newStatus;
-    this.forceUpdate(["status"]);
-  }
-
-  reset(type: ResetTypeEnum) {
-    if (type === ResetTypeEnum.HARD) {
-      this.resetHealth();
-      this.resetWave();
-      this.resetFieldTowers();
-    }
-    this.resetEnemies();
-    this.resetBullets();
-    this.updateGameStatus(GameStatusEnum.IDLE);
-    this.startTime = 0;
+  initializeGame = () => {
     this.initializeEnemies();
-  }
-
-  resetEnemies() {
-    this.assignedEnemies.forEach((assignedEnemy) => {
-      assignedEnemy.hidden = true;
-      this.unassignedEnemies = [...this.unassignedEnemies, assignedEnemy];
-    });
-    this.assignedEnemies.clear();
-    this.forceUpdate(["enemies"]);
-  }
-
-  resetBullets() {
-    this.bullets = [];
-    this.assignedBullets.forEach((assignedBullet) => {
-      assignedBullet.hidden = true;
-      this.unassignedBullets = [...this.unassignedBullets, assignedBullet];
-    });
-    this.assignedBullets.clear();
-    this.forceUpdate(["bullets"]);
-  }
-
-  resetFieldTowers() {
-    this.fieldTowers.clear();
-    this.forceUpdate(["fieldTowers"]);
-  }
-
-  resetHealth() {
-    this.health = 100;
-    this.forceUpdate(["health"]);
-  }
-
-  resetWave() {
-    this.waveNumber = 1;
-    this.forceUpdate(["waveNumber"]);
-  }
-
-  updateFieldTowers = (towerId: string, fieldCellId: number) => {
-    const partyTower = this.partyTowers.get(towerId)!;
-    this.fieldTowers.set(towerId, {
-      ...partyTower,
-      fieldCellId,
-      lastShotTime: 0,
-    });
-    this.forceUpdate(["fieldTowers"]);
   };
 
-  decrementHealth() {
-    this.health = this.health - 1 < 0 ? 0 : this.health - 1;
-    this.forceUpdate(["health"]);
-  }
-
-  incrementMoney(amount = 10) {
-    this.money = this.money + amount;
-    this.forceUpdate(["money"]);
-  }
-
-  incrementWaveNumber() {
-    this.waveNumber = this.waveNumber + 1;
-    this.forceUpdate(["waveNumber"]);
-  }
-
-  prepareNextWave() {
-    this.incrementMoney(50);
-    this.incrementWaveNumber();
-    this.updateGameStatus(GameStatusEnum.COMPLETED_WAVE);
-  }
-
-  isPartyTower(object: any): object is IPartyTower {
-    return "id" in object;
-  }
-
-  updatePartyTowers = (partyTower: IBaseTower | IPartyTower) => {
-    const { baseHealth, baseAttack, baseSpeed } = partyTower;
-    let id: string;
-    let level: number;
-    if (this.isPartyTower(partyTower)) {
-      id = partyTower.id;
-      level = partyTower.level;
-    } else {
-      id = uuidv4();
-      level = 1;
+  private initializeEnemies = () => {
+    for (let i = 0; i < this.enemiesPerWave[this.currentWaveNumber - 1]; i++) {
+      const rarity = this.getRandomRarity();
+      const baseTowersByTerrain = this.baseTowers.get(this.terrain)!;
+      const baseTowersByRarity = baseTowersByTerrain.get(rarity)!;
+      const randomIndex = Math.floor(Math.random() * baseTowersByRarity.length);
+      const { baseId, baseHealth, baseSpeed, component } = baseTowersByRarity[
+        randomIndex
+      ];
+      const avgPartyLvl = this.partyTowers.size ? this.getAvgPartyLvl() : 1;
+      const maxLevelRange = Math.ceil(avgPartyLvl) + 5;
+      const minLevelRange = Math.ceil(avgPartyLvl);
+      const level =
+        Math.floor(Math.random() * (maxLevelRange - minLevelRange + 1)) +
+        minLevelRange;
+      const id = uuidv4();
+      const pathCell = this.board.cells[0];
+      const enemy = new EnemyTower(
+        id,
+        level,
+        baseId,
+        1000 * i,
+        baseHealth,
+        baseSpeed,
+        component,
+        pathCell
+      );
+      this.enemies.push(enemy);
     }
-    const newPartyTower: IPartyTower = {
-      ...partyTower,
+    this.dispatch(["enemies"]);
+  };
+
+  // ADD
+  addPartyTower = (baseId: number, level: number) => {
+    const id = uuidv4();
+    const baseTower = allBaseTowers.get(baseId)!;
+    const newLevel = level || baseTower.level;
+    const newPartyTower = new PartyTower(
       id,
-      health: generateHealthStat(baseHealth, level),
-      attack: generateOtherStat(baseAttack, level),
-      speed: generateOtherStat(baseSpeed, level),
-    };
+      baseTower.baseId,
+      baseTower.component,
+      baseTower.name,
+      baseTower.attackType,
+      baseTower.attackSize,
+      baseTower.attackColor,
+      baseTower.baseHealth,
+      baseTower.baseSpeed,
+      baseTower.baseAttack,
+      baseTower.range,
+      baseTower.terrain,
+      baseTower.rarity,
+      baseTower.region,
+      baseTower.exp,
+      newLevel,
+      baseTower.levelToEvolve,
+      baseTower.evolutionBaseId
+    );
     this.partyTowers.set(id, newPartyTower);
-    this.forceUpdate(["partyTowers"]);
+    this.dispatch(["partyTowers"]);
   };
 
-  getAdjustedAngle(angle: number, direction: DirectionEnum) {
-    if (
-      angle < 0 &&
-      (direction === DirectionEnum.SOUTH || direction === DirectionEnum.NORTH)
-    ) {
-      return angle - 0.2;
+  addFieldTower = (towerId: string, cellRef: Cell) => {
+    const hasBeenPlaced = this.fieldTowers.has(towerId);
+    if (!hasBeenPlaced) {
+      const partyTowerRef = this.partyTowers.get(towerId)!;
+      cellRef.isOccupied = true;
+      this.fieldTowers.set(towerId, new FieldTower(partyTowerRef, cellRef));
+      this.dispatch(["fieldTowers"]);
     }
-    if (angle > 0) {
-      if (direction === DirectionEnum.SOUTH) {
-        return angle + 0.2;
-      }
-      if (direction === DirectionEnum.NORTH) {
-        return angle - 0.2;
-      }
-    }
-    return angle;
-  }
+  };
 
-  animate() {
-    this.initializeStartTime();
+  addBulletElement = (bulletEl: HTMLDivElement) => {
+    this.unassignedBullets.push(bulletEl);
+  };
+
+  addEnemyElement = (enemyEl: HTMLDivElement) => {
+    this.unassignedEnemies.push(enemyEl);
+  };
+
+  addFieldCellElement = (fieldCellEl: HTMLDivElement) => {
+    this.board.addFieldCellEl(fieldCellEl, this.dispatch);
+  };
+
+  addBoardElement = (boardEl: HTMLDivElement) => {
+    this.board.addBoardEl(boardEl);
+  };
+
+  // GET
+  private getRandomRarity = () => {
+    const rarityVal = Math.floor(Math.random() * 100);
+    const rarity =
+      rarityVal > 95
+        ? RarityEnum.RARE
+        : rarityVal > 80
+        ? RarityEnum.UNCOMMON
+        : RarityEnum.COMMON;
+    return rarity;
+  };
+
+  private getAvgPartyLvl = () => {
+    let lvlTotal = 0;
+    this.partyTowers.forEach((partTower) => {
+      lvlTotal += partTower.level;
+    });
+    return lvlTotal / this.partyTowers.size;
+  };
+
+  // UPDATE
+  updateGameStatus = (gameStatus: GameStatusEnum) => {
+    this.status = gameStatus;
+    this.dispatch(["status"]);
+    switch (gameStatus) {
+      case GameStatusEnum.STARTED: {
+        this.activateGameTimer();
+        break;
+      }
+      case GameStatusEnum.PAUSED: {
+        this.deactivateGameTimer();
+        break;
+      }
+      case GameStatusEnum.COMPLETED_WAVE: {
+        this.currentWaveNumber += 1;
+        this.money += 50;
+        this.dispatch(["money", "currentWaveNumber"]);
+        this.deactivateGameTimer();
+        break;
+      }
+      case GameStatusEnum.FAIL_GAME_OVER: {
+        this.deactivateGameTimer();
+        break;
+      }
+      case GameStatusEnum.SUCCESS_GAME_OVER: {
+        this.deactivateGameTimer();
+        break;
+      }
+    }
+  };
+
+  decrementHealth = () => {
+    this.health -= 1;
+    if (this.health <= 0) {
+      this.updateGameStatus(GameStatusEnum.FAIL_GAME_OVER);
+    }
+    this.dispatch(["health"]);
+  };
+
+  activateGameTimer = () => {
+    this.intervalId = window.setInterval(() => {
+      this.gameTimer += 1000;
+      this.dispatch(["gameTimer"]);
+    }, 1000);
+  };
+
+  deactivateGameTimer = () => {
+    window.clearInterval(this.intervalId);
+    this.gameTimer = 0;
+    this.dispatch(["gameTimer"]);
+  };
+
+  // ANIMATE
+  animations = () => {
     this.animateEnemiesMovement();
     this.animateEnemiesInRange();
     this.animateBulletMovements();
@@ -369,110 +259,80 @@ export class Game {
     if (this.status === GameStatusEnum.COMPLETED_WAVE) {
       this.reset(ResetTypeEnum.SOFT);
     }
-    this.forceUpdate(["animations"]);
-  }
+  };
 
-  initializeStartTime() {
-    if (this.startTime === 0) {
-      this.startTime = performance.now();
-    }
-  }
-
-  animateEnemiesMovement() {
+  private animateEnemiesMovement = () => {
     this.enemies = this.enemies.filter((enemy) => {
-      const { speed, currentPathWayIndex, id, delay, isActive } = enemy;
-      if (!isActive) {
-        return false;
+      const { speed, currentPathWayIndex, delay, currentPathCell } = enemy;
+      const { path } = this.board;
+      // Assign enemyElement
+      if (!enemy.enemyElement) {
+        const unassignedEnemy = this.unassignedEnemies.pop()!;
+        enemy.enemyElement = unassignedEnemy;
       }
-
-      const hasAssignedEnemyEl = this.assignedEnemies.get(id);
-      if (!hasAssignedEnemyEl) {
-        const unassignedEnemyEl = this.unassignedEnemies.pop()!;
-        this.assignedEnemies.set(id, unassignedEnemyEl);
-      }
-      const assignedEnemyEl = this.assignedEnemies.get(id)!;
-
-      if (currentPathWayIndex === this.pathWay.length - 1) {
-        assignedEnemyEl!.hidden = true;
-        this.unassignedEnemies = [...this.unassignedEnemies, assignedEnemyEl];
-        this.assignedEnemies.delete(id);
-
+      // Enemy has reached goal
+      if (currentPathWayIndex === path.length - 1) {
+        enemy.enemyElement.hidden = true;
+        this.unassignedEnemies.push(enemy.enemyElement);
         this.decrementHealth();
-        if (this.health <= 0) {
-          this.updateGameStatus(GameStatusEnum.FAIL_GAME_OVER);
-        }
         return false;
       }
-
-      const pathX = this.fieldCellsBounds![
-        this.pathWay[currentPathWayIndex + 1]
-      ].x;
-      const pathY = this.fieldCellsBounds![
-        this.pathWay[currentPathWayIndex + 1]
-      ].y;
+      // Get angle between current path coords that the enemy is on to the next path coords
+      const cellBounds = path[
+        currentPathWayIndex + 1
+      ].cellEl.getBoundingClientRect();
+      const pathX = cellBounds.x;
+      const pathY = cellBounds.y;
       let diffX = pathX - enemy.coords.x;
       let diffY = pathY - enemy.coords.y;
-      if (enemy.direction === DirectionEnum.SOUTH) {
-        diffY = diffY + 100;
-      }
       const angle = Math.atan2(diffY, diffX);
-
-      if (performance.now() - this.startTime > delay) {
+      // Update enemy position
+      if (this.gameTimer >= delay) {
+        const {
+          width,
+          height,
+        } = currentPathCell.cellEl.getBoundingClientRect();
         enemy.coords.x += speed * Math.cos(angle);
         enemy.coords.y += speed * Math.sin(angle);
-
-        assignedEnemyEl!.style.top = `${enemy.coords.y}px`;
-        assignedEnemyEl!.style.left = `${enemy.coords.x}px`;
-        assignedEnemyEl!.hidden = false;
+        enemy.enemyElement.style.top = `${enemy.coords.y}px`;
+        enemy.enemyElement.style.left = `${enemy.coords.x}px`;
+        enemy.enemyElement.style.width = `${width}px`;
+        enemy.enemyElement.style.height = `${height}px`;
+        enemy.enemyElement.hidden = false;
       }
-
-      // Check if within range of path checkpoint
+      // Check if within range of next path
       const sumOfRadii = enemy.speed;
       const distance = Math.sqrt(
         Math.pow(pathX - enemy.coords.x, 2) +
           Math.pow(pathY - enemy.coords.y, 2)
       );
-
+      // Enemy has reached next path, update path index
       if (distance < sumOfRadii) {
         enemy.currentPathWayIndex = currentPathWayIndex + 1;
       }
-
-      const currentPathWay = this.pathWay[enemy.currentPathWayIndex];
-      const nextPathWay = this.pathWay[enemy.currentPathWayIndex + 1];
-
-      if (currentPathWay + 1 === nextPathWay) {
-        enemy.direction = DirectionEnum.EAST;
-      }
-      if (currentPathWay - 1 === nextPathWay) {
-        enemy.direction = DirectionEnum.WEST;
-      }
-      if (currentPathWay + 10 === nextPathWay) {
-        enemy.direction = DirectionEnum.SOUTH;
-      }
-      if (currentPathWay - 10 === nextPathWay) {
-        enemy.direction = DirectionEnum.NORTH;
-      }
-
-      return (
-        enemy.coords.x < this.boardBounds!.width &&
-        enemy.coords.y < this.boardBounds!.height
-      );
+      return true;
     });
-    // All enemies have either reached endpoint or
+    // All enemies have either reached endpoint or defeated
     if (!this.enemies.length) {
-      this.prepareNextWave();
+      this.updateGameStatus(GameStatusEnum.COMPLETED_WAVE);
     }
-  }
+  };
 
-  animateEnemiesInRange() {
+  private animateEnemiesInRange = () => {
     this.fieldTowers.forEach((fTower) => {
-      const { lastShotTime, range, speed, fieldCellId, id } = fTower;
-      const { width, height, left, top } = this.fieldCellsBounds![fieldCellId];
+      const { lastShotTime, partyTowerRef, cellRef } = fTower;
+      const { speed, range } = partyTowerRef;
+      const {
+        width,
+        height,
+        left,
+        top,
+      } = cellRef.cellEl.getBoundingClientRect();
       const halfCellWidth = width / 2;
       const halfCellHeight = height / 2;
       const centerCoords = { x: left + halfCellWidth, y: top + halfCellHeight };
-      // TODO: Adjust cooldown period
-      if (performance.now() - lastShotTime > 2000 / speed) {
+      // Check tower's cooldown period
+      if (this.gameTimer - lastShotTime > 5000 / speed) {
         const enemyInRange = this.enemies.find((enemy) => {
           const extendedRange = width * range;
           const bulletRange = halfCellWidth + extendedRange;
@@ -485,60 +345,50 @@ export class Game {
           const diffX = centerEnemyCoords.x - centerCoords.x;
           const diffY = centerEnemyCoords.y - centerCoords.y;
           const distance = Math.sqrt(Math.pow(diffX, 2) + Math.pow(diffY, 2));
-          // TODO: return enemy that meets the attackMode criteria - 'furthest', most 'health', most 'damage'
           return distance < sumOfRadii;
         });
+        // Create bullet entity if enemy is within range
         if (enemyInRange) {
           const coords = { ...centerCoords };
           const diffX = enemyInRange.coords.x - centerCoords.x;
           const diffY = enemyInRange.coords.y - centerCoords.y;
           const angle = Math.atan2(diffY, diffX);
-          // Adjust bullet to shoot more towards the enemy's future position
-          const adjustedAngled = this.getAdjustedAngle(
-            angle,
-            enemyInRange.direction
-          );
-          const bullet = {
-            id: uuidv4(),
+          const bulletElement = this.unassignedBullets.pop()!;
+          const bulletId = uuidv4();
+          const bullet = new Bullet(
+            bulletId,
             coords,
-            angle: adjustedAngled,
-            towerId: id,
-          };
-          this.bullets = [...this.bullets, bullet];
-          fTower.lastShotTime = performance.now();
+            angle,
+            fTower,
+            bulletElement
+          );
+          this.bullets.push(bullet);
+          fTower.lastShotTime = this.gameTimer;
         }
       }
     });
-  }
+  };
 
-  animateBulletMovements() {
+  private animateBulletMovements = () => {
     this.bullets = this.bullets.filter((bullet) => {
-      const { towerId, angle, coords, id } = bullet;
-      const fieldTower = this.fieldTowers.get(towerId)!;
-      const { speed, attack, attackSize, attackColor } = fieldTower;
-      const { width, height } = this.boardBounds!;
-      const fieldCellBounds = this.fieldCellsBounds![0];
-      const fieldCellWidth = fieldCellBounds.width;
-      const fieldCellHeight = fieldCellBounds.height;
+      const { angle, coords, fieldTowerRef, bulletElement } = bullet;
+      const { partyTowerRef, cellRef } = fieldTowerRef;
+      const { speed, attack, attackSize, attackColor } = partyTowerRef;
+      const cellBounds = cellRef.cellEl.getBoundingClientRect();
+      const { width, height } = this.board.boardEl!.getBoundingClientRect();
+      const fieldCellWidth = cellBounds.width;
+      const fieldCellHeight = cellBounds.height;
 
-      const hasAssignedBulletEl = this.assignedBullets.get(id);
-      if (!hasAssignedBulletEl) {
-        const unassignedBulletEl = this.unassignedBullets.pop()!;
-        this.assignedBullets.set(id, unassignedBulletEl);
-      }
-      const assignedBulletEl = this.assignedBullets.get(id)!;
-
-      // TODO: Adjust speed attributes
       coords.x += speed * Math.cos(angle);
       coords.y += speed * Math.sin(angle);
 
-      assignedBulletEl!.style.top = `${coords.y}px`;
-      assignedBulletEl!.style.left = `${coords.x}px`;
-      assignedBulletEl!.style.width = `${attackSize}px`;
-      assignedBulletEl!.style.height = `${attackSize}px`;
-      assignedBulletEl!.style.borderRadius = "2rem";
-      assignedBulletEl!.style.backgroundColor = attackColor;
-      assignedBulletEl!.hidden = false;
+      bulletElement.style.top = `${coords.y}px`;
+      bulletElement.style.left = `${coords.x}px`;
+      bulletElement.style.width = `${attackSize}px`;
+      bulletElement.style.height = `${attackSize}px`;
+      bulletElement.style.borderRadius = "2rem";
+      bulletElement.style.backgroundColor = attackColor;
+      bulletElement.hidden = false;
 
       const isInBounds =
         coords.x >= 0 &&
@@ -546,7 +396,7 @@ export class Game {
         coords.y >= 0 &&
         coords.y <= height;
       if (isInBounds) {
-        const struckEnemyIndex = this.enemies.findIndex((enemy) => {
+        const damagedEnemy = this.enemies.find((enemy) => {
           const halfAttackSize = attackSize / 2;
           const halfCellWidth = fieldCellWidth / 2;
           const halfCellHeight = fieldCellHeight / 2;
@@ -564,71 +414,101 @@ export class Game {
           const distance = Math.sqrt(Math.pow(diffX, 2) + Math.pow(diffY, 2));
           return distance < sumOfRadii;
         });
-        if (struckEnemyIndex >= 0) {
-          fieldTower.exp += 8;
-          const hasLeveledUp =
-            fieldTower.exp >= this.expNeededToLevel!.get(fieldTower.level + 1)!;
-          if (hasLeveledUp) {
-            fieldTower.level += 1;
-            if (
-              fieldTower.level === fieldTower.levelToEvolve &&
-              fieldTower.evolutionBaseId
-            ) {
-              const evolvedTower = allBaseTowers.get(
-                fieldTower.evolutionBaseId
-              );
-              const newPartyTower = {
-                ...fieldTower,
-                ...evolvedTower,
-                level: fieldTower.level,
-                exp: fieldTower.exp,
-              };
-              this.updatePartyTowers(newPartyTower);
-              this.updateFieldTowers(fieldTower.id, fieldTower.fieldCellId);
-            } else {
-              this.updatePartyTowers(fieldTower);
-            }
-          }
-          const struckEnemy = this.enemies[struckEnemyIndex];
-          struckEnemy.health -= attack;
+
+        if (damagedEnemy) {
+          partyTowerRef.incrementExp(this.dispatch);
+          damagedEnemy.health -= attack;
           const healthPercentage =
-            (struckEnemy.health / struckEnemy.maxHealth) * 100;
-          const assignedEnemyEl = this.assignedEnemies.get(struckEnemy.id)!;
-          const healthBar = assignedEnemyEl.children[1].children[0] as any;
-          healthBar.style.width = `${healthPercentage}%`;
-          if (struckEnemy.health <= 0) {
-            this.enemies.splice(struckEnemyIndex, 1);
+            (damagedEnemy.health / damagedEnemy.maxHealth) * 100;
+          const enemyElement = damagedEnemy.enemyElement!;
+          const healthBarEl = enemyElement.children[1].children[0] as any;
+          healthBarEl.style.width = `${healthPercentage}%`;
+          if (damagedEnemy.health <= 0) {
+            this.money += this.currentWaveNumber * 3;
+            this.dispatch(["money"]);
+            // Remove enemy from active and add back to unassigned
+            enemyElement.hidden = true;
+            this.unassignedEnemies.push(enemyElement);
+            this.enemies = this.enemies.filter(
+              (enemy) => enemy.id !== damagedEnemy.id
+            );
             if (!this.enemies.length) {
-              if (this.waveNumber === 10) {
+              if (this.currentWaveNumber === 10) {
                 this.updateGameStatus(GameStatusEnum.SUCCESS_GAME_OVER);
               } else {
-                this.prepareNextWave();
+                this.updateGameStatus(GameStatusEnum.COMPLETED_WAVE);
               }
             }
-            const assignedEnemyEl = this.assignedEnemies.get(struckEnemy.id)!;
-            assignedEnemyEl!.hidden = true;
-            this.unassignedEnemies = [
-              ...this.unassignedEnemies,
-              assignedEnemyEl,
-            ];
-            this.assignedEnemies.delete(id);
-            this.incrementMoney();
           }
-          assignedBulletEl!.hidden = true;
-          this.unassignedBullets = [
-            ...this.unassignedBullets,
-            assignedBulletEl,
-          ];
-          this.assignedBullets.delete(id);
+          // Remove bullet from active and add back to unassigned
+          bulletElement!.hidden = true;
+          this.unassignedBullets.push(bulletElement);
           return false;
         }
       }
       if (!isInBounds) {
-        assignedBulletEl!.hidden = true;
-        this.unassignedBullets = [...this.unassignedBullets, assignedBulletEl];
-        this.assignedBullets.delete(id);
+        // Remove bullet from active and add back to unassigned
+        bulletElement!.hidden = true;
+        this.unassignedBullets.push(bulletElement);
       }
       return isInBounds;
     });
-  }
+  };
+
+  // RESETS
+  reset = (type: ResetTypeEnum) => {
+    if (type === ResetTypeEnum.HARD) {
+      this.deactivateGameTimer();
+      this.resetHealth();
+      this.resetWaveNumber();
+      this.resetOccupiedCells();
+      this.fieldTowers.clear();
+      this.dispatch(["fieldTowers"]);
+    }
+    this.resetEnemies();
+    this.resetBullets();
+    this.resetFieldTowers();
+    this.updateGameStatus(GameStatusEnum.IDLE);
+    this.initializeEnemies();
+  };
+
+  private resetHealth = () => {
+    this.health = 100;
+    this.dispatch(["health"]);
+  };
+
+  private resetWaveNumber = () => {
+    this.currentWaveNumber = 1;
+    this.dispatch(["currentWaveNumber"]);
+  };
+
+  private resetEnemies = () => {
+    this.enemies.forEach(({ enemyElement }) => {
+      if (enemyElement) {
+        enemyElement.hidden = true;
+        this.unassignedEnemies.push(enemyElement);
+      }
+    });
+    this.enemies = [];
+  };
+
+  private resetBullets = () => {
+    this.bullets.forEach(({ bulletElement }) => {
+      bulletElement.hidden = true;
+      this.unassignedBullets.push(bulletElement);
+    });
+    this.bullets = [];
+  };
+
+  private resetFieldTowers = () => {
+    this.fieldTowers.forEach((fieldTower) => {
+      fieldTower.lastShotTime = 0;
+    });
+  };
+
+  private resetOccupiedCells = () => {
+    this.fieldTowers.forEach((fieldTower) => {
+      fieldTower.cellRef.isOccupied = false;
+    });
+  };
 }

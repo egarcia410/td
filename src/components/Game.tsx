@@ -6,55 +6,47 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import {
-  Grid,
-  useColorMode,
-  useTheme,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  Box,
-  PseudoBox,
-  Text,
-} from "@chakra-ui/core";
+import { Grid, useColorMode, useTheme } from "@chakra-ui/core";
 import Board from "./Board";
 import Sidebar from "./Sidebar";
 import { Game as G } from "../entities";
 import { GameStatusEnum, RegionsEnum } from "../types/game";
-import { TerrainEnum, IBaseTower } from "../types/tower";
-import { regionStarters } from "../utils/starters";
+import { TerrainEnum } from "../types/tower";
+import StarterSelectModal from "./StarterSelectModal";
 
 const Game = () => {
   const theme: any = useTheme();
   const { colorMode } = useColorMode();
   const { bg } = theme[colorMode];
-  const gameRef = useRef<G>(new G());
+  const gameRef = useRef<G>(new G(TerrainEnum.LAND, RegionsEnum.KANTO));
   const game = gameRef.current;
-  const [{ status, partyTowers }, setGame] = useState<G>(game);
-  const [starters, setStarters] = useState<IBaseTower[]>([]);
-  const [selectedStarters, setSelectedStarters] = useState<number[]>([]);
+  const [
+    {
+      addListener,
+      initializeGame,
+      dispatch,
+      updateGameStatus,
+      animations,
+      status,
+    },
+    update,
+  ] = useState(game);
+
+  useEffect(() => {
+    initializeGame();
+    addListener({
+      valuesToWatch: ["status"],
+      update,
+    });
+  }, [addListener, initializeGame]);
 
   const thenRef = useRef(performance.now());
   const requestIdRef = useRef(0);
 
-  useEffect(() => {
-    // TODO: Update valuesToWatch to no trigger for partyTowers
-    game.addListener({
-      valuesToWatch: ["status", "partyTowers"],
-      trigger: setGame,
-    });
-    // TODO: Base region & terrain type from user's selection
-    setStarters(regionStarters.get(RegionsEnum.KANTO)!);
-    game.initialize(TerrainEnum.LAND, RegionsEnum.KANTO);
-  }, [game]);
-
   const handleResize = useCallback(() => {
-    game.updateBoardBounds();
-    game.updateFieldCellsBounds();
-    game.updateGameStatus(GameStatusEnum.PAUSED);
-  }, [game]);
+    updateGameStatus(GameStatusEnum.PAUSED);
+    dispatch(["fieldTowers", "enemies"]);
+  }, [updateGameStatus, dispatch]);
 
   useEffect(() => {
     window.addEventListener("resize", handleResize);
@@ -74,7 +66,7 @@ const Game = () => {
 
       if (delta > interval) {
         thenRef.current = now - (delta % interval);
-        game.animate();
+        animations();
       }
     };
 
@@ -83,14 +75,7 @@ const Game = () => {
     } else {
       cancelAnimationFrame(requestIdRef.current);
     }
-  }, [status, game]);
-
-  const onSelectStarter = (starter: IBaseTower) => {
-    if (!selectedStarters.includes(starter.baseId)) {
-      setSelectedStarters((prevVal) => [...prevVal, starter.baseId]);
-      game.updatePartyTowers(starter);
-    }
-  };
+  }, [status, animations]);
 
   return (
     <>
@@ -98,49 +83,7 @@ const Game = () => {
         <Board game={game} />
         <Sidebar game={game} />
       </Grid>
-
-      <Modal
-        closeOnOverlayClick={false}
-        isCentered
-        isOpen={partyTowers.size < 2}
-      >
-        <ModalOverlay />
-        <ModalContent color="white" borderRadius="0.25rem">
-          <ModalHeader textAlign="center" color="gray.400">
-            <Text fontSize="xl">Select 2</Text>
-          </ModalHeader>
-          <ModalBody pb={6}>
-            <Grid
-              templateColumns="repeat(3, 1fr)"
-              gap="1rem"
-              templateRows="8rem"
-            >
-              {starters!.map((starter, id) => {
-                const { component } = starter;
-                const isSelected = selectedStarters.includes(starter.baseId);
-                return (
-                  <PseudoBox
-                    as="button"
-                    onClick={() => onSelectStarter(starter)}
-                    key={id}
-                    p="1rem"
-                    _hover={{
-                      bg: "gray.400",
-                      border: "0.15rem solid #F6F9FC",
-                    }}
-                    bg={isSelected ? "gray.400" : ""}
-                    border={isSelected ? "0.15rem solid #F6F9FC" : ""}
-                    cursor={isSelected ? "not-allowed" : ""}
-                    borderRadius="0.25rem"
-                  >
-                    <Box as={component} />
-                  </PseudoBox>
-                );
-              })}
-            </Grid>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+      <StarterSelectModal game={game} />
     </>
   );
 };

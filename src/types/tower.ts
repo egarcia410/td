@@ -55,7 +55,7 @@ export interface IBaseTower {
 export interface ITower extends IBaseTower {
   id: string;
   speed: number;
-  attack: number;
+  attack?: number;
   health: number;
 }
 

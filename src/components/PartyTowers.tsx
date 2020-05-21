@@ -9,14 +9,14 @@ interface IPartyTowersProps {
 }
 
 const PartyTowers: React.FC<IPartyTowersProps> = ({ game }) => {
-  const [{ partyTowers }, setGame] = useState(game);
+  const [{ addListener, partyTowers }, update] = useState(game);
 
   useEffect(() => {
-    game.addListener({
+    addListener({
       valuesToWatch: ["partyTowers"],
-      trigger: setGame,
+      update,
     });
-  }, [game]);
+  }, [addListener]);
 
   const onDragStart = (event: any) => {
     event.dataTransfer.setData("text/plain", event.target.id);
@@ -46,7 +46,7 @@ const PartyTowers: React.FC<IPartyTowersProps> = ({ game }) => {
               <Box as={component} w="100%" h="100%" />
             </Box>
             <Grid
-              templateColumns="auto"
+              templateColumns="3.25rem"
               templateRows="repeat(4, 1fr)"
               gap="0.15rem"
             >
@@ -70,7 +70,7 @@ const PartyTowers: React.FC<IPartyTowersProps> = ({ game }) => {
               <Flex color="white" alignItems="center" fontSize="1rem">
                 <Box as={IoIosSpeedometer} paddingRight="0.15rem"></Box>
                 <Text fontSize="xs" fontWeight="600">
-                  {speed}
+                  {speed.toFixed(2)}
                 </Text>
               </Flex>
             </Grid>

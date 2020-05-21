@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Flex, Text, BoxProps } from "@chakra-ui/core";
 import { FaCoins, FaHeart } from "react-icons/fa";
 import { TiWaves } from "react-icons/ti";
@@ -10,14 +10,17 @@ interface IDetailsProps extends BoxProps {
 }
 
 const Details: React.FC<IDetailsProps> = ({ game, ...rest }) => {
-  const [{ health, money, waveNumber, partyTowers }, setGame] = useState(game);
+  const [
+    { addListener, health, money, currentWaveNumber, partyTowers },
+    update,
+  ] = useState(game);
 
   useEffect(() => {
-    game.addListener({
-      valuesToWatch: ["health", "money", "waveNumber", "partyTowers"],
-      trigger: setGame,
+    addListener({
+      valuesToWatch: ["health", "money", "currentWaveNumber", "partyTowers"],
+      update,
     });
-  }, [game]);
+  }, [addListener]);
 
   return (
     <Flex justifyContent="space-around" {...rest}>
@@ -41,7 +44,7 @@ const Details: React.FC<IDetailsProps> = ({ game, ...rest }) => {
       <Flex direction="column" alignItems="center">
         <Box as={TiWaves} aria-label="wave" color="blue.400" size="1.5rem" />
         <Text fontSize="1.25rem" fontWeight="500" color="gray.400">
-          {waveNumber}/10
+          {currentWaveNumber}/10
         </Text>
       </Flex>
       <Flex direction="column" alignItems="center">

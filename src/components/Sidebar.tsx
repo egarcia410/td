@@ -19,6 +19,7 @@ const Sidebar: React.FC<ISideBarProps> = ({ game }) => {
       borderLeftColor={theme[colorMode].borderColor}
       borderLeftWidth="0.25rem"
       spacing="1rem"
+      minW="305px"
     >
       <Controls game={game} p="0.5rem" />
       <Details game={game} />

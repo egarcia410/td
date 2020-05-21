@@ -17,13 +17,15 @@ const Field: React.FC<IFieldProps> = ({ game }) => {
   const onDrop = (event: any) => {
     event.preventDefault();
     const towerId = event.dataTransfer.getData("text/plain");
-    const x = Math.floor(event.pageX / game.fieldCellsBounds![0].width);
-    const y = Math.floor(event.pageY / game.fieldCellsBounds![0].height);
+    const { cells } = game.board;
+    const { width, height } = cells[0].cellEl.getBoundingClientRect();
+    const x = Math.floor(event.pageX / width);
+    const y = Math.floor(event.pageY / height);
     const fieldCellId = y < 1 ? x : +`${y}${x}`;
-    const fieldCellEl = game.fieldCellsEl![fieldCellId];
-    // Field cell is not occupied or a pathway
-    if (!game.pathWay.includes(fieldCellId) && !fieldCellEl.occupied) {
-      game.updateFieldTowers(towerId, fieldCellId);
+    const fieldCellEl = cells[fieldCellId];
+    // Field cell is not occupied
+    if (!fieldCellEl.isOccupied) {
+      game.addFieldTower(towerId, fieldCellEl);
     }
   };
 

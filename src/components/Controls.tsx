@@ -1,8 +1,9 @@
 import React, { memo } from "react";
-import { Grid, GridProps } from "@chakra-ui/core";
+import { Grid, GridProps, Flex } from "@chakra-ui/core";
 import PlayControls from "./PlayControls";
 import OptionControls from "./OptionControls";
 import { Game } from "../entities";
+import GameTimer from "./GameTimer";
 
 interface IControlsProps extends GridProps {
   game: Game;
@@ -16,7 +17,10 @@ const Controls: React.FC<IControlsProps> = ({ game, ...rest }) => {
       gap="1rem"
       {...rest}
     >
-      <OptionControls game={game} />
+      <Flex direction="row">
+        <GameTimer game={game} />
+        <OptionControls game={game} />
+      </Flex>
       <PlayControls game={game} />
     </Grid>
   );

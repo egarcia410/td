@@ -1,4 +1,4 @@
-import React, { memo, useState, useCallback } from "react";
+import React, { memo, useCallback } from "react";
 import { Game } from "../entities";
 import { Box } from "@chakra-ui/core";
 
@@ -7,18 +7,16 @@ interface IBulletsProps {
 }
 
 const Bullets: React.FC<IBulletsProps> = ({ game }) => {
-  const [{ bulletCount }] = useState(game);
-
   const bulletRefCB = useCallback(
     (bulletEl: HTMLDivElement) => {
-      game.addUnassignedBullet(bulletEl);
+      game.addBulletElement(bulletEl);
     },
     [game]
   );
 
   const renderBullets = () => {
     const bullets: any = [];
-    for (let i = 0; i < bulletCount; i++) {
+    for (let i = 0; i < 25; i++) {
       bullets.push(
         <Box
           key={`bullet-${i}`}

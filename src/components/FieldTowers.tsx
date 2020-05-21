@@ -1,23 +1,23 @@
 import React, { memo, useState, useEffect } from "react";
-import { Game } from "../entities";
 import { Box, Grid, PseudoBox } from "@chakra-ui/core";
+import { Game } from "../entities";
 
 interface IFieldTowersProps {
   game: Game;
 }
 
 const FieldTowers: React.FC<IFieldTowersProps> = ({ game }) => {
-  const [{ fieldCellsBounds, fieldTowers }, setGame] = useState(game);
+  const [{ addListener, fieldTowers }, update] = useState(game);
   const [isRangeActive, setIsRangeActive] = useState<Map<string, boolean>>(
     new Map()
   );
 
   useEffect(() => {
-    game.addListener({
-      valuesToWatch: ["fieldCellsBounds", "fieldTowers"],
-      trigger: setGame,
+    addListener({
+      valuesToWatch: ["fieldTowers"],
+      update,
     });
-  }, [game]);
+  }, [addListener]);
 
   const onDisplayRange = (id: string) => {
     const newRangeActive = new Map(isRangeActive);
@@ -27,47 +27,51 @@ const FieldTowers: React.FC<IFieldTowersProps> = ({ game }) => {
   };
 
   const renderFieldTowers = () => {
-    const fTowers: any = [];
-    fieldCellsBounds &&
-      fieldTowers.forEach(({ component, fieldCellId, range, id }, index) => {
-        const Comp = component;
-        const { width, height, left, top } = fieldCellsBounds![fieldCellId];
-        const extendedRange = width * range;
-        const bulletRange = (width / 2 + extendedRange) * 2;
-        const isActive = isRangeActive.get(id) || false;
-        fTowers.push(
-          <Grid
-            id={`${index}`}
-            key={index}
-            w={`${width}px`}
-            h={`${height}px`}
+    const fTowers: any[] = [];
+    fieldTowers.forEach(({ partyTowerRef, cellRef }, index) => {
+      const { component, range, id } = partyTowerRef;
+      const {
+        width,
+        height,
+        left,
+        top,
+      } = cellRef.cellEl.getBoundingClientRect();
+      const extendedRange = width * range;
+      const bulletRange = (width / 2 + extendedRange) * 2;
+      const isActive = isRangeActive.get(id) || false;
+      fTowers.push(
+        <Grid
+          id={`${index}`}
+          key={index}
+          position="absolute"
+          w={`${width}px`}
+          h={`${height}px`}
+          top={`${top}px`}
+          left={`${left}px`}
+          justifyContent="center"
+          alignContent="center"
+        >
+          <Box
+            as={component}
+            w="100%"
+            h="100%"
             position="absolute"
-            top={`${top}px`}
-            left={`${left}px`}
-            justifyContent="center"
-            alignContent="center"
-          >
-            <Box
-              as={Comp}
-              w="100%"
-              h="100%"
-              position="absolute"
-              onClick={() => onDisplayRange(id)}
-              cursor="pointer"
+            onClick={() => onDisplayRange(id)}
+            cursor="pointer"
+          />
+          {isActive && (
+            <PseudoBox
+              w={bulletRange}
+              h={bulletRange}
+              borderRadius="30rem"
+              bg="gray.400"
+              opacity={0.5}
+              zIndex={-1}
             />
-            {isActive && (
-              <PseudoBox
-                w={bulletRange}
-                h={bulletRange}
-                borderRadius="30rem"
-                bg="gray.400"
-                opacity={0.5}
-                zIndex={-1}
-              />
-            )}
-          </Grid>
-        );
-      });
+          )}
+        </Grid>
+      );
+    });
     return fTowers;
   };
 

@@ -9,11 +9,12 @@ interface IBoardProps {
 }
 
 const Board: React.FC<IBoardProps> = ({ game }) => {
+  const { addBoardElement } = game;
   const boardRefCB = useCallback(
     (boardEl) => {
-      game.addBoardEl(boardEl);
+      addBoardElement(boardEl);
     },
-    [game]
+    [addBoardElement]
   );
 
   return (

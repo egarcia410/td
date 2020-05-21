@@ -11,21 +11,21 @@ interface IPlayControlsProps {
 
 const PlayControls: React.FC<IPlayControlsProps> = ({ game }) => {
   const variantColor = useTypedSelector((state) => state.settings.variantColor);
-  const [{ status }, setGame] = useState({ ...game });
+  const [{ addListener, updateGameStatus, status }, update] = useState(game);
 
   useEffect(() => {
-    game.addListener({
+    addListener({
       valuesToWatch: ["status"],
-      trigger: setGame,
+      update,
     });
-  }, [game]);
+  }, [addListener]);
 
   const onToggleGameState = () => {
     const newGameStatus =
       status === GameStatusEnum.STARTED
         ? GameStatusEnum.PAUSED
         : GameStatusEnum.STARTED;
-    game.updateGameStatus(newGameStatus);
+    updateGameStatus(newGameStatus);
   };
 
   return (

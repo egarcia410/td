@@ -27,7 +27,7 @@ const OptionControls: React.FC<IOptionControlsProps> = ({ game }) => {
   }, [game]);
 
   return (
-    <Flex justify="flex-end">
+    <Flex>
       <ThemeSelector />
       <IconButton
         aria-label="Color mode"

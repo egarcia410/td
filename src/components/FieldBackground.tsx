@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useCallback, useRef } from "react";
+import React, { memo, useMemo, useCallback, useState, useEffect } from "react";
 import { Grid, Box } from "@chakra-ui/core";
 import { Game } from "../entities";
 
@@ -7,40 +7,30 @@ interface IFieldBackgroundProps {
 }
 
 const FieldBackground: React.FC<IFieldBackgroundProps> = ({ game }) => {
-  const fieldCellsRef = useRef<HTMLDivElement[]>([]);
-  const fieldCellsBoundsRef = useRef<DOMRect[]>([]);
+  const [{ addListener, addFieldCellElement }, update] = useState(game);
+
+  useEffect(() => {
+    addListener({
+      valuesToWatch: ["path"],
+      update,
+    });
+  }, [addListener]);
 
   const fieldCellRefCB = useCallback(
     (fieldCell: HTMLDivElement) => {
-      fieldCellsBoundsRef.current = [
-        ...fieldCellsBoundsRef.current,
-        fieldCell.getBoundingClientRect(),
-      ];
-      fieldCellsRef.current = [...fieldCellsRef.current, fieldCell];
-      if (fieldCellsRef.current.length === 100) {
-        game.addFieldCells(fieldCellsRef.current, fieldCellsBoundsRef.current);
-      }
+      addFieldCellElement(fieldCell);
     },
-    [game]
+    [addFieldCellElement]
   );
 
   const renderFieldCells = useMemo(() => {
-    const fieldCells = [];
+    const fieldCells: any[] = [];
     for (let i = 0; i < 100; i++) {
-      const isPathWay = game.pathWay.includes(i);
-      const color = isPathWay ? "#FEB054" : "#00ffa2";
-      fieldCells.push(
-        <Box
-          id={`field-bg-cell-${i}`}
-          ref={fieldCellRefCB}
-          key={i}
-          bg={color}
-          border={!isPathWay ? "1px solid #48bb78" : ""}
-        />
-      );
+      const key = `field-bg-cell-${i}`;
+      fieldCells.push(<Box id={key} key={key} ref={fieldCellRefCB} />);
     }
     return fieldCells;
-  }, [game, fieldCellRefCB]);
+  }, [fieldCellRefCB]);
 
   return (
     <Grid

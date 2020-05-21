@@ -16,7 +16,7 @@ export enum ResetTypeEnum {
 
 export interface IListener {
   valuesToWatch: string[];
-  trigger: Dispatch<React.SetStateAction<any>>;
+  update: Dispatch<React.SetStateAction<any>>;
 }
 
 export enum RegionsEnum {
