@@ -15,6 +15,8 @@ import { FaStore } from "react-icons/fa";
 import PartyTowers from "./PartyTowers";
 import { useTypedSelector } from "../hooks/useTypedSelector";
 import { Game } from "../entities";
+import ContentContainer from "./ContentContainer";
+import InventoryItems from "./InventoryItems";
 
 interface ITabSectionProps {
   game: Game;
@@ -66,10 +68,14 @@ const TabSection: React.FC<ITabSectionProps> = ({ game }) => {
       </TabList>
       <TabPanels>
         <TabPanel>
-          <PartyTowers game={game} />
+          <ContentContainer>
+            <PartyTowers game={game} />
+          </ContentContainer>
         </TabPanel>
         <TabPanel>
-          <p>two!</p>
+          <ContentContainer>
+            <InventoryItems />
+          </ContentContainer>
         </TabPanel>
         <TabPanel>
           <p>three!</p>

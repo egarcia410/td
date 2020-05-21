@@ -84,11 +84,7 @@ const PartyTowers: React.FC<IPartyTowersProps> = ({ game }) => {
     return pTowers;
   };
 
-  return (
-    <Grid templateColumns="repeat(2, 1fr)" gap="0.25rem" padding="0.5rem">
-      {renderPartyTowers()}
-    </Grid>
-  );
+  return <>{renderPartyTowers()}</>;
 };
 
 export default PartyTowers;

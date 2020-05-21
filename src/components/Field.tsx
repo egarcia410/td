@@ -16,16 +16,20 @@ const Field: React.FC<IFieldProps> = ({ game }) => {
 
   const onDrop = (event: any) => {
     event.preventDefault();
-    const towerId = event.dataTransfer.getData("text/plain");
+    const id = event.dataTransfer.getData("text/plain");
     const { cells } = game.board;
     const { width, height } = cells[0].cellEl.getBoundingClientRect();
     const x = Math.floor(event.pageX / width);
     const y = Math.floor(event.pageY / height);
     const fieldCellId = y < 1 ? x : +`${y}${x}`;
     const fieldCellEl = cells[fieldCellId];
-    // Field cell is not occupied
-    if (!fieldCellEl.isOccupied) {
-      game.addFieldTower(towerId, fieldCellEl);
+    if (id === "pokeball") {
+      game.attemptCapture(fieldCellId);
+    } else {
+      // Field cell is not occupied
+      if (!fieldCellEl.isOccupied) {
+        game.addFieldTower(id, fieldCellEl);
+      }
     }
   };
 

@@ -52,7 +52,7 @@ export class Game {
     this.baseTowers = getBaseTowers();
     this.partyTowers = new Map();
     this.fieldTowers = new Map();
-    this.enemiesPerWave = [5, 10, 10, 10, 1, 1, 3, 3, 3, 3];
+    this.enemiesPerWave = [1, 1, 2, 2, 1, 1, 3, 3, 3, 3];
     this.currentWaveNumber = 1;
     this.enemies = [];
     this.bullets = [];
@@ -248,6 +248,25 @@ export class Game {
     this.dispatch(["gameTimer"]);
   };
 
+  attemptCapture = (cellId: number) => {
+    const enemy = this.enemies.find((enemy) => {
+      return enemy.currentPathCell.id === cellId;
+    });
+    if (enemy) {
+      const { maxHealth, health, baseId, level, enemyElement, id } = enemy;
+      const randomValue = Math.floor(Math.random() * 255);
+      const result = (maxHealth * 255 * 4) / (health * 12);
+      if (result >= randomValue) {
+        this.addPartyTower(baseId, level);
+        if (enemyElement) {
+          enemyElement.hidden = true;
+          this.unassignedEnemies.push(enemyElement);
+          this.enemies = this.enemies.filter((enemy) => enemy.id !== id);
+        }
+      }
+    }
+  };
+
   // ANIMATE
   animations = () => {
     this.animateEnemiesMovement();
@@ -309,6 +328,7 @@ export class Game {
       // Enemy has reached next path, update path index
       if (distance < sumOfRadii) {
         enemy.currentPathWayIndex = currentPathWayIndex + 1;
+        enemy.currentPathCell = path[enemy.currentPathWayIndex];
       }
       return true;
     });
