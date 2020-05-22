@@ -18,7 +18,7 @@ const Game = () => {
   const theme: any = useTheme();
   const { colorMode } = useColorMode();
   const { bg } = theme[colorMode];
-  const gameRef = useRef<G>(new G(TerrainEnum.GRASS, RegionsEnum.KANTO));
+  const gameRef = useRef<G>(new G(TerrainEnum.WATER, RegionsEnum.KANTO));
   const game = gameRef.current;
   const [
     {

@@ -19,12 +19,12 @@ export class Cell {
     this.FCost = Infinity;
     this.neighbors = [];
     this.parent = null;
-    this.variant = CellVariantEnum.LAND;
+    this.variant = CellVariantEnum.MAIN;
   }
 
   resetHard = () => {
     this.isOccupied = false;
-    this.variant = CellVariantEnum.LAND;
+    this.variant = CellVariantEnum.MAIN;
     this.resetPartial();
   };
 

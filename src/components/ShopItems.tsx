@@ -80,9 +80,9 @@ const ShopItems: React.FC<IShopItemsProps> = ({ game }) => {
       if (typeof img !== "string") {
         itemColor =
           item === "Land Block"
-            ? terrainColors.land.secondary
+            ? terrainColors.main.secondary
             : item === "Water Block"
-            ? terrainColors.water.secondary
+            ? terrainColors.other.secondary
             : "#FEFB54";
       }
       return (

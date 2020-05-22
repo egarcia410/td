@@ -55,8 +55,8 @@ export class Board {
   resetCells = () => {
     this.cells.forEach((cell, index) => {
       // Default terrain color to field colors
-      cell.cellEl.style.backgroundColor = this.terrainColors.land.primary;
-      cell.cellEl.style.border = `1px solid ${this.terrainColors.land.secondary}`;
+      cell.cellEl.style.backgroundColor = this.terrainColors.main.primary;
+      cell.cellEl.style.border = `1px solid ${this.terrainColors.main.secondary}`;
       cell.resetHard();
       // Randomize field with obstacles
       if (index !== 0 && index !== this.cells.length - 1) {
@@ -77,17 +77,18 @@ export class Board {
       const isOther =
         Math.floor(Math.random() * Math.floor(100)) < this.otherPercentage;
       if (isOther) {
-        if (cell.variant === CellVariantEnum.LAND) {
-          // Add random water cells
-          cell.cellEl.style.backgroundColor = this.terrainColors.water.primary;
-          cell.cellEl.style.border = `1px solid ${this.terrainColors.water.secondary}`;
-          cell.variant = CellVariantEnum.WATER;
-        } else if (cell.variant === CellVariantEnum.WATER) {
-          // Add random land cells
-          cell.cellEl.style.backgroundColor = this.terrainColors.land.primary;
-          cell.cellEl.style.border = `1px solid ${this.terrainColors.land.secondary}`;
-          cell.variant = CellVariantEnum.LAND;
+        if (cell.variant === CellVariantEnum.MAIN) {
+          // Add random other cells
+          cell.cellEl.style.backgroundColor = this.terrainColors.other.primary;
+          cell.cellEl.style.border = `1px solid ${this.terrainColors.other.secondary}`;
+          cell.variant = CellVariantEnum.OTHER;
         }
+        // else if (cell.variant === CellVariantEnum.WATER) {
+        //   // Add random main cells
+        //   cell.cellEl.style.backgroundColor = this.terrainColors.land.primary;
+        //   cell.cellEl.style.border = `1px solid ${this.terrainColors.land.secondary}`;
+        //   cell.variant = CellVariantEnum.LAND;
+        // }
       }
     });
   };

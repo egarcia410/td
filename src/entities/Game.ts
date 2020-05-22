@@ -173,24 +173,46 @@ export class Game {
       const partyTowerRef = this.partyTowers.get(towerId)!;
       const { terrain } = partyTowerRef;
       // Check if cell terrain is compatible with tower type
-      if (
-        cellRef.variant === CellVariantEnum.WATER &&
-        Object.values(terrain).includes(TerrainEnum.WATER)
-      ) {
-        // Tower is of water type and being placed on water cell
-        cellRef.isOccupied = true;
-        this.fieldTowers.set(towerId, new FieldTower(partyTowerRef, cellRef));
-        this.dispatch(["fieldTowers"]);
-        return;
-      } else if (
-        cellRef.variant === CellVariantEnum.LAND &&
-        !Object.values(terrain).includes(TerrainEnum.WATER)
-      ) {
-        // Tower is not a water type and being placed on land cell
-        cellRef.isOccupied = true;
-        this.fieldTowers.set(towerId, new FieldTower(partyTowerRef, cellRef));
-        this.dispatch(["fieldTowers"]);
-        return;
+      if (this.terrain === TerrainEnum.WATER) {
+        if (
+          cellRef.variant === CellVariantEnum.MAIN &&
+          Object.values(terrain).includes(TerrainEnum.WATER)
+        ) {
+          // Tower is of water type and being placed on water cell
+          cellRef.isOccupied = true;
+          this.fieldTowers.set(towerId, new FieldTower(partyTowerRef, cellRef));
+          this.dispatch(["fieldTowers"]);
+          return;
+        } else if (
+          cellRef.variant === CellVariantEnum.OTHER &&
+          !Object.values(terrain).includes(TerrainEnum.WATER)
+        ) {
+          // Tower is not a water type and being placed on land cell
+          cellRef.isOccupied = true;
+          this.fieldTowers.set(towerId, new FieldTower(partyTowerRef, cellRef));
+          this.dispatch(["fieldTowers"]);
+          return;
+        }
+      } else {
+        if (
+          cellRef.variant === CellVariantEnum.OTHER &&
+          Object.values(terrain).includes(TerrainEnum.WATER)
+        ) {
+          // Tower is of water type and being placed on water cell
+          cellRef.isOccupied = true;
+          this.fieldTowers.set(towerId, new FieldTower(partyTowerRef, cellRef));
+          this.dispatch(["fieldTowers"]);
+          return;
+        } else if (
+          cellRef.variant === CellVariantEnum.MAIN &&
+          !Object.values(terrain).includes(TerrainEnum.WATER)
+        ) {
+          // Tower is not a water type and being placed on land cell
+          cellRef.isOccupied = true;
+          this.fieldTowers.set(towerId, new FieldTower(partyTowerRef, cellRef));
+          this.dispatch(["fieldTowers"]);
+          return;
+        }
       }
       this.message = {
         title: "Invalid",
