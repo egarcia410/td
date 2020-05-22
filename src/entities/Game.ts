@@ -11,7 +11,7 @@ import {
 } from "../types/game";
 import { getBaseTowers, allBaseTowers } from "../utils/baseTowers";
 import { regionStarters } from "../utils/starters";
-import { getTerrainColors } from "../utils";
+import { terrainColors } from "../utils";
 // Entities
 import { EnemyTower } from "./EnemyTower";
 import { Bullet } from "./Bullet";
@@ -42,7 +42,7 @@ export class Game {
   unassignedBullets: HTMLDivElement[];
   unassignedEnemies: HTMLDivElement[];
   money: number;
-  inventory: Map<string, number>;
+  inventory: Map<number, number>;
   message: { title: string; description: string; status: string } | null;
   constructor(terrain: TerrainEnum, region: RegionsEnum) {
     this.listeners = new Map();
@@ -51,7 +51,7 @@ export class Game {
     this.intervalId = 0;
     this.health = 100;
     this.terrain = terrain;
-    this.terrainColors = getTerrainColors.get(this.terrain)!;
+    this.terrainColors = terrainColors.get(this.terrain)!;
     this.board = new Board(this.terrain, this.terrainColors);
     this.region = region;
     this.starters = regionStarters.get(this.region)!;
@@ -222,11 +222,19 @@ export class Game {
       this.dispatch(["message"]);
       return;
     }
-    this.message = {
-      title: "Occupied",
-      description: "Field cell is already occupied",
-      status: "warning",
-    };
+    if (hasBeenPlaced) {
+      this.message = {
+        title: "Active",
+        description: "Pokémon is already active",
+        status: "warning",
+      };
+    } else {
+      this.message = {
+        title: "Occupied",
+        description: "Field cell is already occupied",
+        status: "warning",
+      };
+    }
     this.dispatch(["message"]);
   };
 
@@ -316,8 +324,6 @@ export class Game {
 
   deactivateGameTimer = () => {
     window.clearInterval(this.intervalId);
-    this.gameTimer = 0;
-    this.dispatch(["gameTimer"]);
   };
 
   attemptCapture = (cellRef: Cell) => {
@@ -356,7 +362,7 @@ export class Game {
       } = capturedEnemy;
       const randomValue = Math.floor(Math.random() * 255);
       const result = (maxHealth * 255 * 4) / (health * 12);
-      this.consumeItem("Pokeball");
+      this.consumeItem(1);
       if (result >= randomValue) {
         this.message = {
           title: "Captured",
@@ -379,12 +385,12 @@ export class Game {
     }
   };
 
-  purchaseItem = (item: string, price: number) => {
+  purchaseItem = (id: number, item: string, price: number) => {
     if (this.money - price >= 0) {
       this.money -= price;
-      const prevQuantity = this.inventory.get(item) || 0;
+      const prevQuantity = this.inventory.get(id) || 0;
       const newQuantity = prevQuantity + 1;
-      this.inventory.set(item, newQuantity);
+      this.inventory.set(id, newQuantity);
       this.message = {
         title: "Purchase Complete",
         description: `You bought a ${item}`,
@@ -394,12 +400,64 @@ export class Game {
     }
   };
 
-  consumeItem = (item: string) => {
-    const prevQuantity = this.inventory.get(item);
+  consumeItem = (id: number) => {
+    const prevQuantity = this.inventory.get(id);
     if (prevQuantity) {
       const newQuantity = prevQuantity - 1 >= 0 ? prevQuantity - 1 : 0;
-      this.inventory.set(item, newQuantity);
+      this.inventory.set(id, newQuantity);
       this.dispatch(["inventory"]);
+    }
+  };
+
+  useHealthPotion = () => {
+    if (this.health < 100) {
+      this.health = Math.min(100, this.health + 20);
+      this.consumeItem(2);
+      this.dispatch(["health"]);
+    }
+  };
+
+  usePokeDoll = (fieldCellId: number) => {
+    let fieldTowerId = null;
+    this.fieldTowers.forEach((fieldTower) => {
+      if (fieldTower.cellRef.id === fieldCellId) {
+        fieldTowerId = fieldTower.partyTowerRef.id;
+      }
+    });
+    if (fieldTowerId) {
+      const { cellRef } = this.fieldTowers.get(fieldTowerId)!;
+      cellRef.isOccupied = false;
+      this.fieldTowers.delete(fieldTowerId);
+      this.consumeItem(3);
+      this.dispatch(["fieldTowers"]);
+    }
+  };
+
+  useBullDozer = (fieldCell: Cell) => {
+    if (fieldCell.variant === CellVariantEnum.OBSTACLE) {
+      fieldCell.variant = CellVariantEnum.MAIN;
+      fieldCell.isOccupied = false;
+      fieldCell.cellEl.style.backgroundColor = this.terrainColors.main.primary;
+      fieldCell.cellEl.style.border = `1px solid ${this.terrainColors.main.secondary}`;
+      this.consumeItem(4);
+    }
+  };
+
+  useOtherBlock = (fieldCell: Cell) => {
+    if (fieldCell.variant === CellVariantEnum.MAIN) {
+      fieldCell.variant = CellVariantEnum.OTHER;
+      fieldCell.cellEl.style.backgroundColor = this.terrainColors.other.primary;
+      fieldCell.cellEl.style.border = `1px solid ${this.terrainColors.other.secondary}`;
+      this.consumeItem(5);
+    }
+  };
+
+  useMainBlock = (fieldCell: Cell) => {
+    if (fieldCell.variant === CellVariantEnum.OTHER) {
+      fieldCell.variant = CellVariantEnum.MAIN;
+      fieldCell.cellEl.style.backgroundColor = this.terrainColors.main.primary;
+      fieldCell.cellEl.style.border = `1px solid ${this.terrainColors.main.secondary}`;
+      this.consumeItem(6);
     }
   };
 
@@ -624,6 +682,8 @@ export class Game {
     this.resetFieldTowers();
     this.updateGameStatus(GameStatusEnum.IDLE);
     this.initializeEnemies();
+    this.gameTimer = 0;
+    this.dispatch(["gameTimer"]);
   };
 
   private resetHealth = () => {

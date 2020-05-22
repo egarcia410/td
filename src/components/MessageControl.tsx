@@ -29,7 +29,7 @@ const MessageControl: React.FC<IMessageControlProps> = ({ game }) => {
         isClosable: true,
       });
     }
-  }, [message]);
+  }, [message, toast]);
 
   return <div></div>;
 };

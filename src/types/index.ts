@@ -1,3 +1,5 @@
+import { IconType } from "react-icons/lib/cjs";
+
 export interface ICoordinates {
   x: number;
   y: number;
@@ -15,4 +17,13 @@ export enum CellVariantEnum {
   OBSTACLE = "OBSTACLE",
   MAIN = "MAIN",
   OTHER = "OTHER",
+}
+
+export interface IItem {
+  id: number;
+  item: string;
+  img: string | IconType;
+  price: number;
+  description: string;
+  isDraggable: boolean;
 }

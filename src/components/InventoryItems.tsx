@@ -1,20 +1,21 @@
 import React, { memo, useEffect, useState } from "react";
-import { Grid, Box, Text } from "@chakra-ui/core";
-import { GiCube } from "react-icons/gi";
+import { Grid, Box, Text, Flex } from "@chakra-ui/core";
 import { Game } from "../entities";
-import Pokeball from "../items/pokeball.png";
-import HealthPotion from "../items/health-potion.png";
+import { items } from "../utils";
+import { TerrainEnum } from "../types/tower";
 
 interface IInventoryItemsProps {
   game: Game;
 }
 
 const InventoryItems: React.FC<IInventoryItemsProps> = ({ game }) => {
-  const [{ addListener, inventory }, update] = useState(game);
+  const [{ addListener, inventory, terrainColors, terrain }, update] = useState(
+    game
+  );
 
   useEffect(() => {
     addListener({
-      valuesToWatch: ["inventory"],
+      valuesToWatch: ["inventory", "terrainColors"],
       update,
     });
   }, [addListener]);
@@ -23,13 +24,45 @@ const InventoryItems: React.FC<IInventoryItemsProps> = ({ game }) => {
     event.dataTransfer.setData("text/plain", event.target.id);
   };
 
+  const onConsumeItem = (
+    id: number,
+    isDraggable: boolean,
+    quantity: number
+  ) => {
+    if (!isDraggable && quantity > 0) {
+      const consumedItem = items.get(id)!;
+      if (consumedItem.item === "Health Potion") {
+        game.useHealthPotion();
+      }
+    }
+  };
+
   const renderInventoryItems = () => {
     const inventoryItems: any[] = [];
-    inventory.forEach((quantity, name) => {
-      const isDraggable = ["Pokeball", "Pokedoll"].includes(name);
+    inventory.forEach((quantity, id) => {
+      const inventoryItem = items.get(id)!;
+      const { isDraggable, item, img } = inventoryItem;
+      let itemColor: string = "";
+      if (typeof img !== "string") {
+        if (terrain === TerrainEnum.WATER) {
+          itemColor =
+            item === "Land Block"
+              ? terrainColors.other.secondary
+              : item === "Water Block"
+              ? terrainColors.main.secondary
+              : "#FEFB54";
+        } else {
+          itemColor =
+            item === "Land Block"
+              ? terrainColors.main.secondary
+              : item === "Water Block"
+              ? terrainColors.other.secondary
+              : "#FEFB54";
+        }
+      }
       inventoryItems.push(
         <Grid
-          key={name}
+          key={`iventory-item-${id}`}
           backgroundColor="gray.400"
           padding="0.15rem"
           borderRadius="0.25rem"
@@ -37,18 +70,34 @@ const InventoryItems: React.FC<IInventoryItemsProps> = ({ game }) => {
           alignContent="center"
           justifyContent="center"
         >
-          <Box
-            draggable={isDraggable}
-            onDragStart={onDragStart}
+          <Flex
+            justifyContent="center"
             cursor="pointer"
             padding="0.15rem"
             w="6rem"
-            h="6rem"
+            id={`${id}`}
+            draggable={isDraggable}
+            onDragStart={onDragStart}
           >
-            <img draggable={isDraggable} id={name} src={Pokeball} alt={name} />
-          </Box>
+            {typeof img === "string" ? (
+              <img
+                id={`${id}`}
+                src={img}
+                alt={item}
+                onClick={() => onConsumeItem(id, isDraggable, quantity)}
+              />
+            ) : (
+              <Box
+                as={img}
+                w="100%"
+                h="100%"
+                color={itemColor}
+                onClick={() => onConsumeItem(id, isDraggable, quantity)}
+              />
+            )}
+          </Flex>
           <Box color="white" textAlign="center">
-            <Text>{name}</Text>
+            <Text>{item}</Text>
             <Text>Quantity: {quantity}</Text>
           </Box>
         </Grid>
