@@ -295,22 +295,25 @@ export class Game {
 
   attemptCapture = (cellRef: Cell) => {
     const capturedEnemy = this.enemies.find((enemy) => {
-      const enemyElement = enemy.enemyElement!;
-      const enemyBounds = enemyElement.getBoundingClientRect();
-      const cellBounds = cellRef.cellEl.getBoundingClientRect();
-      const sumOfRadii = cellBounds.width / 4 + enemyBounds.width / 4;
-      const centerEnemyCoords = {
-        x: enemy.coords.x + enemyBounds.width / 2,
-        y: enemy.coords.y + enemyBounds.height / 2,
-      };
-      const centerCoords = {
-        x: cellBounds.left + cellBounds.width / 2,
-        y: cellBounds.top + cellBounds.height / 2,
-      };
-      const diffX = centerEnemyCoords.x - centerCoords.x;
-      const diffY = centerEnemyCoords.y - centerCoords.y;
-      const distance = Math.sqrt(Math.pow(diffX, 2) + Math.pow(diffY, 2));
-      return distance < sumOfRadii;
+      const enemyElement = enemy.enemyElement;
+      if (enemyElement) {
+        const enemyBounds = enemyElement.getBoundingClientRect();
+        const cellBounds = cellRef.cellEl.getBoundingClientRect();
+        const sumOfRadii = cellBounds.width / 4 + enemyBounds.width / 4;
+        const centerEnemyCoords = {
+          x: enemy.coords.x + enemyBounds.width / 2,
+          y: enemy.coords.y + enemyBounds.height / 2,
+        };
+        const centerCoords = {
+          x: cellBounds.left + cellBounds.width / 2,
+          y: cellBounds.top + cellBounds.height / 2,
+        };
+        const diffX = centerEnemyCoords.x - centerCoords.x;
+        const diffY = centerEnemyCoords.y - centerCoords.y;
+        const distance = Math.sqrt(Math.pow(diffX, 2) + Math.pow(diffY, 2));
+        return distance < sumOfRadii;
+      }
+      return false;
     });
     if (capturedEnemy) {
       const {
