@@ -24,7 +24,7 @@ export const getBaseTowersByTerrain = () => {
   const airTerrainTowers: IBaseTower[] = [];
   allBaseTowers.forEach((bTower) => {
     bTower.terrain.forEach((terrain) => {
-      if (terrain === TerrainEnum.AIR) {
+      if (terrain === TerrainEnum.FLYING) {
         airTerrainTowers.push(bTower);
       }
       const towers = towersByTerrain.get(terrain) || [];
@@ -33,7 +33,7 @@ export const getBaseTowersByTerrain = () => {
   });
   // Add air towers to all terrains
   towersByTerrain.forEach((towers, terrain) => {
-    if (terrain !== TerrainEnum.AIR) {
+    if (terrain !== TerrainEnum.FLYING) {
       airTerrainTowers.forEach((airTower) => {
         towersByTerrain.set(terrain, [...towers, airTower]);
       });
@@ -66,7 +66,7 @@ export const allBaseTowers = new Map<number, IBaseTower>([
       baseAttack: 49,
       baseSpeed: 45,
       range: 1,
-      terrain: [TerrainEnum.LAND],
+      terrain: [TerrainEnum.GRASS],
       rarity: RarityEnum.COMMON,
       region: RegionsEnum.KANTO,
       exp: 0,
@@ -88,7 +88,7 @@ export const allBaseTowers = new Map<number, IBaseTower>([
       baseAttack: 62,
       baseSpeed: 60,
       range: 2,
-      terrain: [TerrainEnum.LAND],
+      terrain: [TerrainEnum.GRASS],
       rarity: RarityEnum.UNCOMMON,
       region: RegionsEnum.KANTO,
       exp: 0,
@@ -110,7 +110,7 @@ export const allBaseTowers = new Map<number, IBaseTower>([
       baseAttack: 100,
       baseSpeed: 80,
       range: 3,
-      terrain: [TerrainEnum.LAND],
+      terrain: [TerrainEnum.GRASS],
       rarity: RarityEnum.RARE,
       region: RegionsEnum.KANTO,
       exp: 0,
@@ -132,7 +132,7 @@ export const allBaseTowers = new Map<number, IBaseTower>([
       baseAttack: 52,
       baseSpeed: 65,
       range: 1,
-      terrain: [TerrainEnum.LAND],
+      terrain: [TerrainEnum.GRASS],
       rarity: RarityEnum.COMMON,
       region: RegionsEnum.KANTO,
       exp: 0,
@@ -154,7 +154,7 @@ export const allBaseTowers = new Map<number, IBaseTower>([
       baseAttack: 64,
       baseSpeed: 65,
       range: 2,
-      terrain: [TerrainEnum.LAND],
+      terrain: [TerrainEnum.GRASS],
       rarity: RarityEnum.UNCOMMON,
       region: RegionsEnum.KANTO,
       exp: 0,
@@ -176,7 +176,7 @@ export const allBaseTowers = new Map<number, IBaseTower>([
       baseAttack: 84,
       baseSpeed: 100,
       range: 3,
-      terrain: [TerrainEnum.LAND],
+      terrain: [TerrainEnum.GRASS, TerrainEnum.FLYING],
       rarity: RarityEnum.RARE,
       region: RegionsEnum.KANTO,
       exp: 0,

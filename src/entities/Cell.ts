@@ -1,3 +1,5 @@
+import { CellVariantEnum } from "../types";
+
 export class Cell {
   id: number;
   cellEl: HTMLDivElement;
@@ -7,6 +9,7 @@ export class Cell {
   FCost: number;
   neighbors: Cell[];
   parent: Cell | null;
+  variant: CellVariantEnum;
   constructor(id: number, cellEl: HTMLDivElement, isOccupied: boolean) {
     this.id = id; // Index of cell on grid
     this.cellEl = cellEl;
@@ -16,10 +19,12 @@ export class Cell {
     this.FCost = Infinity;
     this.neighbors = [];
     this.parent = null;
+    this.variant = CellVariantEnum.LAND;
   }
 
   resetHard = () => {
     this.isOccupied = false;
+    this.variant = CellVariantEnum.LAND;
     this.resetPartial();
   };
 

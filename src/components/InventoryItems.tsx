@@ -1,5 +1,6 @@
 import React, { memo, useEffect, useState } from "react";
 import { Grid, Box, Text } from "@chakra-ui/core";
+import { GiCube } from "react-icons/gi";
 import { Game } from "../entities";
 import Pokeball from "../items/pokeball.png";
 import HealthPotion from "../items/health-potion.png";
@@ -44,7 +45,7 @@ const InventoryItems: React.FC<IInventoryItemsProps> = ({ game }) => {
             w="6rem"
             h="6rem"
           >
-            <img id={name} src={Pokeball} alt={name} />
+            <img draggable={isDraggable} id={name} src={Pokeball} alt={name} />
           </Box>
           <Box color="white" textAlign="center">
             <Text>{name}</Text>

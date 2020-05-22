@@ -13,9 +13,15 @@ export enum AttackSizeEnum {
 }
 
 export enum TerrainEnum {
-  LAND = "LAND",
+  GRASS = "GRASS", // TODO: Make this the generic type
+  ROCK = "ROCK",
+  FIRE = "FIRE",
   WATER = "WATER",
-  AIR = "AIR",
+  ICE = "ICE",
+  FLYING = "FLYING",
+  ELECTRIC = "ELECTRIC",
+  POISON = "POISON",
+  PSYCHIC = "PSYCHIC",
 }
 
 export enum RarityEnum {

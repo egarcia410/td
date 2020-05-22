@@ -11,6 +11,7 @@ import {
 } from "../types/game";
 import { getBaseTowers, allBaseTowers } from "../utils/baseTowers";
 import { regionStarters } from "../utils/starters";
+import { getTerrainColors } from "../utils";
 // Entities
 import { EnemyTower } from "./EnemyTower";
 import { Bullet } from "./Bullet";
@@ -18,6 +19,7 @@ import { PartyTower } from "./PartyTower";
 import { FieldTower } from "./FieldTower";
 import { Board } from "./Board";
 import { Cell } from "./Cell";
+import { ITerrainColors, CellVariantEnum } from "../types";
 
 export class Game {
   listeners: Map<string, Dispatch<React.SetStateAction<any>>[]>;
@@ -26,6 +28,7 @@ export class Game {
   intervalId: number;
   health: number;
   terrain: TerrainEnum;
+  terrainColors: ITerrainColors;
   board: Board;
   region: RegionsEnum;
   starters: any[]; // TODO: Update type definition
@@ -48,7 +51,8 @@ export class Game {
     this.intervalId = 0;
     this.health = 100;
     this.terrain = terrain;
-    this.board = new Board(this.terrain);
+    this.terrainColors = getTerrainColors.get(this.terrain)!;
+    this.board = new Board(this.terrain, this.terrainColors);
     this.region = region;
     this.starters = regionStarters.get(this.region)!;
     this.baseTowers = getBaseTowers();
@@ -161,55 +165,47 @@ export class Game {
 
   addFieldTower = (towerId: string, cellRef: Cell) => {
     const hasBeenPlaced = this.fieldTowers.has(towerId);
-    if (!hasBeenPlaced) {
-      if (this.status === GameStatusEnum.IDLE) {
-        this.board.path.forEach((pathCell) => {
-          pathCell.isOccupied = false;
-          pathCell.cellEl.style.backgroundColor = this.board.terrainColors.field.primary;
-          pathCell.cellEl.style.border = `1px solid ${this.board.terrainColors.field.secondary}`;
-        });
+    if (
+      !hasBeenPlaced &&
+      !cellRef.isOccupied &&
+      cellRef.variant !== CellVariantEnum.PATH
+    ) {
+      const partyTowerRef = this.partyTowers.get(towerId)!;
+      const { terrain } = partyTowerRef;
+      // Check if cell terrain is compatible with tower type
+      if (
+        cellRef.variant === CellVariantEnum.WATER &&
+        Object.values(terrain).includes(TerrainEnum.WATER)
+      ) {
+        // Tower is of water type and being placed on water cell
         cellRef.isOccupied = true;
-        this.board.cells.forEach((cell) => {
-          cell.resetPartial();
-          if (cell.isOccupied) {
-            cell.cellEl.style.backgroundColor = this.board.terrainColors.obstacle.primary;
-            cell.cellEl.style.border = `1px solid ${this.board.terrainColors.obstacle.secondary}`;
-          }
-        });
-        this.board.generatePath();
-        if (this.board.path.length) {
-          const partyTowerRef = this.partyTowers.get(towerId)!;
-          this.fieldTowers.set(towerId, new FieldTower(partyTowerRef, cellRef));
-          this.fieldTowers.forEach(({ cellRef }) => {
-            cellRef.cellEl.style.backgroundColor = this.board.terrainColors.field.primary;
-            cellRef.cellEl.style.border = `1px solid ${this.board.terrainColors.field.secondary}`;
-          });
-          this.dispatch(["fieldTowers", "path"]);
-        } else {
-          cellRef.isOccupied = false;
-          this.board.cells.forEach((cell) => {
-            cell.resetPartial();
-            if (cell.isOccupied) {
-              cell.cellEl.style.backgroundColor = this.board.terrainColors.obstacle.primary;
-              cell.cellEl.style.border = `1px solid ${this.board.terrainColors.obstacle.secondary}`;
-            }
-          });
-          this.board.generatePath();
-          this.fieldTowers.forEach(({ cellRef }) => {
-            cellRef.cellEl.style.backgroundColor = this.board.terrainColors.field.primary;
-            cellRef.cellEl.style.border = `1px solid ${this.board.terrainColors.field.secondary}`;
-          });
-        }
-      } else {
-        // If game status is ongoing and cell is not occupied, add field tower
-        if (!cellRef.isOccupied) {
-          const partyTowerRef = this.partyTowers.get(towerId)!;
-          cellRef.isOccupied = true;
-          this.fieldTowers.set(towerId, new FieldTower(partyTowerRef, cellRef));
-          this.dispatch(["fieldTowers"]);
-        }
+        this.fieldTowers.set(towerId, new FieldTower(partyTowerRef, cellRef));
+        this.dispatch(["fieldTowers"]);
+        return;
+      } else if (
+        cellRef.variant === CellVariantEnum.LAND &&
+        !Object.values(terrain).includes(TerrainEnum.WATER)
+      ) {
+        // Tower is not a water type and being placed on land cell
+        cellRef.isOccupied = true;
+        this.fieldTowers.set(towerId, new FieldTower(partyTowerRef, cellRef));
+        this.dispatch(["fieldTowers"]);
+        return;
       }
+      this.message = {
+        title: "Invalid",
+        description: "Must be placed on valid field cell",
+        status: "warning",
+      };
+      this.dispatch(["message"]);
+      return;
     }
+    this.message = {
+      title: "Occupied",
+      description: "Field cell is already occupied",
+      status: "warning",
+    };
+    this.dispatch(["message"]);
   };
 
   addBulletElement = (bulletEl: HTMLDivElement) => {
@@ -303,12 +299,15 @@ export class Game {
   };
 
   attemptCapture = (cellRef: Cell) => {
+    if (this.status === GameStatusEnum.PAUSED) {
+      return;
+    }
     const capturedEnemy = this.enemies.find((enemy) => {
       const enemyElement = enemy.enemyElement;
       if (enemyElement) {
         const enemyBounds = enemyElement.getBoundingClientRect();
         const cellBounds = cellRef.cellEl.getBoundingClientRect();
-        const sumOfRadii = cellBounds.width / 4 + enemyBounds.width / 4;
+        const sumOfRadii = cellBounds.width / 3 + enemyBounds.width / 3;
         const centerEnemyCoords = {
           x: enemy.coords.x + enemyBounds.width / 2,
           y: enemy.coords.y + enemyBounds.height / 2,
@@ -378,6 +377,7 @@ export class Game {
     if (prevQuantity) {
       const newQuantity = prevQuantity - 1 >= 0 ? prevQuantity - 1 : 0;
       this.inventory.set(item, newQuantity);
+      this.dispatch(["inventory"]);
     }
   };
 

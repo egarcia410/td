@@ -1,31 +1,28 @@
 import { Dispatch } from "react";
 import { Cell } from "./Cell";
+import { ITerrainColors, CellVariantEnum } from "../types";
 import { TerrainEnum } from "../types/tower";
 
 export class Board {
-  terrainColors: {
-    path: { primary: string; secondary: string };
-    obstacle: { primary: string; secondary: string };
-    field: { primary: string; secondary: string };
-  };
+  terrain: TerrainEnum;
+  terrainColors: ITerrainColors;
   boardEl: HTMLDivElement | null;
   cells: Cell[];
   path: Cell[];
   obstaclePercentage: number;
+  otherPercentage: number;
   numOfCells: number;
   numOfCols: number;
   numOfRows: number;
-  constructor(terrain: TerrainEnum) {
+  constructor(terrain: TerrainEnum, terrainColors: ITerrainColors) {
+    this.terrain = terrain;
     // TODO: Create helper function to get terrainColors based on terrain type
-    this.terrainColors = {
-      path: { primary: "#DCC767", secondary: "#A9975D" },
-      field: { primary: "#98B866", secondary: "#60944A" },
-      obstacle: { primary: "#8F9482", secondary: "#7A7873" },
-    };
+    this.terrainColors = terrainColors;
     this.boardEl = null;
     this.cells = [];
     this.path = [];
     this.obstaclePercentage = 25;
+    this.otherPercentage = 15;
     this.numOfCols = 10;
     this.numOfRows = 10;
     this.numOfCells = this.numOfCols * this.numOfRows;
@@ -34,6 +31,7 @@ export class Board {
   initializeBoard = (dispatch: Dispatch<any>) => {
     this.resetCells();
     this.generatePath();
+    this.addOtherCells();
     if (!this.path.length) {
       this.initializeBoard(dispatch);
     } else {
@@ -57,8 +55,8 @@ export class Board {
   resetCells = () => {
     this.cells.forEach((cell, index) => {
       // Default terrain color to field colors
-      cell.cellEl.style.backgroundColor = this.terrainColors.field.primary;
-      cell.cellEl.style.border = `1px solid ${this.terrainColors.field.secondary}`;
+      cell.cellEl.style.backgroundColor = this.terrainColors.land.primary;
+      cell.cellEl.style.border = `1px solid ${this.terrainColors.land.secondary}`;
       cell.resetHard();
       // Randomize field with obstacles
       if (index !== 0 && index !== this.cells.length - 1) {
@@ -68,6 +66,27 @@ export class Board {
           cell.isOccupied = isOccupied;
           cell.cellEl.style.backgroundColor = this.terrainColors.obstacle.primary;
           cell.cellEl.style.border = `1px solid ${this.terrainColors.obstacle.secondary}`;
+          cell.variant = CellVariantEnum.OBSTACLE;
+        }
+      }
+    });
+  };
+
+  addOtherCells = () => {
+    this.cells.forEach((cell) => {
+      const isOther =
+        Math.floor(Math.random() * Math.floor(100)) < this.otherPercentage;
+      if (isOther) {
+        if (cell.variant === CellVariantEnum.LAND) {
+          // Add random water cells
+          cell.cellEl.style.backgroundColor = this.terrainColors.water.primary;
+          cell.cellEl.style.border = `1px solid ${this.terrainColors.water.secondary}`;
+          cell.variant = CellVariantEnum.WATER;
+        } else if (cell.variant === CellVariantEnum.WATER) {
+          // Add random land cells
+          cell.cellEl.style.backgroundColor = this.terrainColors.land.primary;
+          cell.cellEl.style.border = `1px solid ${this.terrainColors.land.secondary}`;
+          cell.variant = CellVariantEnum.LAND;
         }
       }
     });
@@ -106,12 +125,14 @@ export class Board {
           path.push(curr);
           while (curr.parent) {
             curr.isOccupied = true;
+            curr.variant = CellVariantEnum.PATH;
             curr.cellEl.style.backgroundColor = this.terrainColors.path.primary;
             curr.cellEl.style.border = `1px solid ${this.terrainColors.path.secondary}`;
             path.push(curr.parent);
             curr = curr.parent;
           }
           curr.isOccupied = true;
+          curr.variant = CellVariantEnum.PATH;
           curr.cellEl.style.backgroundColor = this.terrainColors.path.primary;
           curr.cellEl.style.border = `1px solid ${this.terrainColors.path.secondary}`;
           break;
