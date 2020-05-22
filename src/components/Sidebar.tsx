@@ -4,6 +4,7 @@ import Controls from "./Controls";
 import Details from "./Details";
 import TabSection from "./TabSection";
 import { Game } from "../entities";
+import MessageControl from "./MessageControl";
 
 interface ISideBarProps {
   game: Game;
@@ -24,6 +25,7 @@ const Sidebar: React.FC<ISideBarProps> = ({ game }) => {
       <Controls game={game} p="0.5rem" />
       <Details game={game} />
       <TabSection game={game} />
+      <MessageControl game={game} />
     </Stack>
   );
 };

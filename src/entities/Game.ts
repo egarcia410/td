@@ -40,6 +40,7 @@ export class Game {
   unassignedEnemies: HTMLDivElement[];
   money: number;
   inventory: Map<string, number>;
+  message: { title: string; description: string; status: string } | null;
   constructor(terrain: TerrainEnum, region: RegionsEnum) {
     this.listeners = new Map();
     this.status = GameStatusEnum.IDLE;
@@ -61,6 +62,7 @@ export class Game {
     this.unassignedEnemies = [];
     this.money = 500;
     this.inventory = new Map();
+    this.message = null;
   }
 
   addListener = (listener: IListener) => {
@@ -149,7 +151,12 @@ export class Game {
       baseTower.evolutionBaseId
     );
     this.partyTowers.set(id, newPartyTower);
-    this.dispatch(["partyTowers"]);
+    this.message = {
+      title: "Added to Party",
+      description: `${baseTower.name} was added to your party`,
+      status: "success",
+    };
+    this.dispatch(["partyTowers", "message"]);
   };
 
   addFieldTower = (towerId: string, cellRef: Cell) => {
@@ -330,12 +337,24 @@ export class Game {
       const result = (maxHealth * 255 * 4) / (health * 12);
       this.consumeItem("Pokeball");
       if (result >= randomValue) {
+        this.message = {
+          title: "Captured",
+          description: "Attempt to capture successful",
+          status: "success",
+        };
         this.addPartyTower(baseId, level);
         if (enemyElement) {
           enemyElement.hidden = true;
           this.enemies = this.enemies.filter((enemy) => enemy.id !== id);
         }
+      } else {
+        this.message = {
+          title: "Escaped",
+          description: "Attempt to capture unsuccessful",
+          status: "warning",
+        };
       }
+      this.dispatch(["message"]);
     }
   };
 
@@ -345,7 +364,12 @@ export class Game {
       const prevQuantity = this.inventory.get(item) || 0;
       const newQuantity = prevQuantity + 1;
       this.inventory.set(item, newQuantity);
-      this.dispatch(["money", "inventory"]);
+      this.message = {
+        title: "Purchase Complete",
+        description: `You bought a ${item}`,
+        status: "success",
+      };
+      this.dispatch(["money", "inventory", "message"]);
     }
   };
 
@@ -354,7 +378,6 @@ export class Game {
     if (prevQuantity) {
       const newQuantity = prevQuantity - 1 >= 0 ? prevQuantity - 1 : 0;
       this.inventory.set(item, newQuantity);
-      this.dispatch(["inventory"]);
     }
   };
 
