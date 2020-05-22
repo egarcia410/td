@@ -17,6 +17,7 @@ import { useTypedSelector } from "../hooks/useTypedSelector";
 import { Game } from "../entities";
 import ContentContainer from "./ContentContainer";
 import InventoryItems from "./InventoryItems";
+import ShopItems from "./ShopItems";
 
 interface ITabSectionProps {
   game: Game;
@@ -74,11 +75,13 @@ const TabSection: React.FC<ITabSectionProps> = ({ game }) => {
         </TabPanel>
         <TabPanel>
           <ContentContainer>
-            <InventoryItems />
+            <InventoryItems game={game} />
           </ContentContainer>
         </TabPanel>
         <TabPanel>
-          <p>three!</p>
+          <ContentContainer>
+            <ShopItems game={game} />
+          </ContentContainer>
         </TabPanel>
       </TabPanels>
     </Tabs>

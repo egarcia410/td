@@ -39,6 +39,7 @@ export class Game {
   unassignedBullets: HTMLDivElement[];
   unassignedEnemies: HTMLDivElement[];
   money: number;
+  inventory: Map<string, number>;
   constructor(terrain: TerrainEnum, region: RegionsEnum) {
     this.listeners = new Map();
     this.status = GameStatusEnum.IDLE;
@@ -58,7 +59,8 @@ export class Game {
     this.bullets = [];
     this.unassignedBullets = [];
     this.unassignedEnemies = [];
-    this.money = 50;
+    this.money = 500;
+    this.inventory = new Map();
   }
 
   addListener = (listener: IListener) => {
@@ -326,6 +328,7 @@ export class Game {
       } = capturedEnemy;
       const randomValue = Math.floor(Math.random() * 255);
       const result = (maxHealth * 255 * 4) / (health * 12);
+      this.consumeItem("Pokeball");
       if (result >= randomValue) {
         this.addPartyTower(baseId, level);
         if (enemyElement) {
@@ -333,6 +336,25 @@ export class Game {
           this.enemies = this.enemies.filter((enemy) => enemy.id !== id);
         }
       }
+    }
+  };
+
+  purchaseItem = (item: string, price: number) => {
+    if (this.money - price >= 0) {
+      this.money -= price;
+      const prevQuantity = this.inventory.get(item) || 0;
+      const newQuantity = prevQuantity + 1;
+      this.inventory.set(item, newQuantity);
+      this.dispatch(["money", "inventory"]);
+    }
+  };
+
+  consumeItem = (item: string) => {
+    const prevQuantity = this.inventory.get(item);
+    if (prevQuantity) {
+      const newQuantity = prevQuantity - 1 >= 0 ? prevQuantity - 1 : 0;
+      this.inventory.set(item, newQuantity);
+      this.dispatch(["inventory"]);
     }
   };
 

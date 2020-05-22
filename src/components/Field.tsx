@@ -23,7 +23,7 @@ const Field: React.FC<IFieldProps> = ({ game }) => {
     const y = Math.floor(event.pageY / height);
     const fieldCellId = y < 1 ? x : +`${y}${x}`;
     const fieldCellEl = cells[fieldCellId];
-    if (id === "pokeball") {
+    if (id === "Pokeball") {
       game.attemptCapture(fieldCellEl);
     } else {
       game.addFieldTower(id, fieldCellEl);
