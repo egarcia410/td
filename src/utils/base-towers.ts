@@ -1,13 +1,13 @@
 import {
-  IBaseTower,
   AttackTypeEnum,
   AttackSizeEnum,
   TerrainEnum,
   RarityEnum,
-} from "../types/tower";
+  RegionsEnum,
+} from "../types";
+import { IBaseTower } from "../types/IBaseTower";
 import * as towers from "../towers";
-import { RegionsEnum } from "../types/game";
-import { bulletColors } from "./bullets";
+import { bulletColors } from "./bullet-colors";
 
 export const getBaseTowers = () => {
   const baseTowers = new Map<TerrainEnum, Map<RarityEnum, IBaseTower[]>>();

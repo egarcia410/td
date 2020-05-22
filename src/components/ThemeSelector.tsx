@@ -13,7 +13,7 @@ import {
 } from "@chakra-ui/core";
 import { IoIosColorPalette } from "react-icons/io";
 import { useDispatch } from "react-redux";
-import { useTypedSelector } from "../hooks/useTypedSelector";
+import { useTypedSelector } from "../hooks";
 import { updateVariantColor } from "../store/settings/actions";
 
 const ThemeSelector = () => {

@@ -2,7 +2,7 @@ import React, { memo, useState, useEffect } from "react";
 import { Grid, Box, Text, Flex, Tooltip } from "@chakra-ui/core";
 import { Game } from "../entities";
 import { items } from "../utils";
-import { TerrainEnum } from "../types/tower";
+import { TerrainEnum } from "../types";
 
 interface IShopItemsProps {
   game: Game;

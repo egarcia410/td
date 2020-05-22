@@ -11,9 +11,9 @@ import {
 } from "@chakra-ui/core";
 import { MdGroupWork } from "react-icons/md";
 import { GiLightBackpack } from "react-icons/gi";
-import { FaStore } from "react-icons/fa";
+import { FaStore, FaTrophy } from "react-icons/fa";
 import PartyTowers from "./PartyTowers";
-import { useTypedSelector } from "../hooks/useTypedSelector";
+import { useTypedSelector } from "../hooks";
 import { Game } from "../entities";
 import ContentContainer from "./ContentContainer";
 import InventoryItems from "./InventoryItems";
@@ -66,6 +66,17 @@ const TabSection: React.FC<ITabSectionProps> = ({ game }) => {
         >
           <Box as={FaStore} size="2rem" />
         </Tab>
+        <Tab
+          color={theme[colorMode].borderColor}
+          borderBottomColor={`${theme[colorMode].borderColor}`}
+          borderBottomWidth="0.15rem"
+          _selected={{
+            color: vColor,
+            borderBottomColor: vColor,
+          }}
+        >
+          <Box as={FaTrophy} size="2rem" />
+        </Tab>
       </TabList>
       <TabPanels>
         <TabPanel>
@@ -83,6 +94,7 @@ const TabSection: React.FC<ITabSectionProps> = ({ game }) => {
             <ShopItems game={game} />
           </ContentContainer>
         </TabPanel>
+        <TabPanel>BADGES</TabPanel>
       </TabPanels>
     </Tabs>
   );

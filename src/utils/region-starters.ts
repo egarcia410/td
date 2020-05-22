@@ -1,5 +1,5 @@
-import { RegionsEnum } from "../types/game";
-import { allBaseTowers } from "./baseTowers";
+import { RegionsEnum } from "../types";
+import { allBaseTowers } from "./base-towers";
 
 export const regionStarters = new Map<RegionsEnum, any[]>([
   [

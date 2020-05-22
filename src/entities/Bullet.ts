@@ -1,4 +1,4 @@
-import { ICoordinates } from "../types";
+import { ICoordinates } from "../types/ICoordinates";
 import { FieldTower } from "./FieldTower";
 
 export class Bullet {

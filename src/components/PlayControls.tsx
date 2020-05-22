@@ -1,8 +1,8 @@
 import React, { useState, memo, useEffect } from "react";
 import { Flex, IconButton } from "@chakra-ui/core";
 import { FaPlay, FaPause } from "react-icons/fa";
-import { useTypedSelector } from "../hooks/useTypedSelector";
-import { GameStatusEnum } from "../types/game";
+import { useTypedSelector } from "../hooks";
+import { GameStatusEnum } from "../types";
 import { Game } from "../entities";
 
 interface IPlayControlsProps {

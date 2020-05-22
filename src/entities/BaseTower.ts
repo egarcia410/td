@@ -3,8 +3,8 @@ import {
   AttackSizeEnum,
   TerrainEnum,
   RarityEnum,
-} from "../types/tower";
-import { RegionsEnum } from "../types/game";
+  RegionsEnum,
+} from "../types";
 
 export class BaseTower {
   id: string;

@@ -11,7 +11,7 @@ import {
   Box,
 } from "@chakra-ui/core";
 import { Game } from "../entities";
-import { IBaseTower } from "../types/tower";
+import { IBaseTower } from "../types/IBaseTower";
 
 interface IStarterSelectModalProps {
   game: Game;

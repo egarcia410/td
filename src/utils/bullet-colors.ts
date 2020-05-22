@@ -1,4 +1,4 @@
-import { AttackTypeEnum } from "../types/tower";
+import { AttackTypeEnum } from "../types";
 
 export const bulletColors = new Map([
   [AttackTypeEnum.GRASS, "#38a169"],

@@ -2,24 +2,32 @@ import { Dispatch } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { cloneDeep } from "lodash";
 // Types & Helpers
-import { TerrainEnum, RarityEnum, IBaseTower } from "../types/tower";
 import {
+  TerrainEnum,
+  RarityEnum,
   RegionsEnum,
   GameStatusEnum,
   ResetTypeEnum,
-  IListener,
-} from "../types/game";
-import { getBaseTowers, allBaseTowers } from "../utils/baseTowers";
-import { regionStarters } from "../utils/starters";
-import { terrainColors } from "../utils";
+  CellVariantEnum,
+} from "../types";
+import { ITerrainColors } from "../types/ITerrainColors";
+import { IBaseTower } from "../types/IBaseTower";
+import { IListener } from "../types/IListener";
+import {
+  terrainColors,
+  regionStarters,
+  getBaseTowers,
+  allBaseTowers,
+} from "../utils";
 // Entities
-import { EnemyTower } from "./EnemyTower";
-import { Bullet } from "./Bullet";
-import { PartyTower } from "./PartyTower";
-import { FieldTower } from "./FieldTower";
-import { Board } from "./Board";
-import { Cell } from "./Cell";
-import { ITerrainColors, CellVariantEnum } from "../types";
+import {
+  EnemyTower,
+  Bullet,
+  PartyTower,
+  FieldTower,
+  Cell,
+  Board,
+} from "./index";
 
 export class Game {
   listeners: Map<string, Dispatch<React.SetStateAction<any>>[]>;
@@ -58,7 +66,7 @@ export class Game {
     this.baseTowers = getBaseTowers();
     this.partyTowers = new Map();
     this.fieldTowers = new Map();
-    this.enemiesPerWave = [2, 2, 2, 2, 2, 2, 3, 3, 3, 3];
+    this.enemiesPerWave = [2, 2, 2, 2, 2, 2, 2, 3, 2, 2];
     this.currentWaveNumber = 1;
     this.enemies = [];
     this.bullets = [];

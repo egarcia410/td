@@ -10,8 +10,7 @@ import { Grid, useColorMode, useTheme } from "@chakra-ui/core";
 import Board from "./Board";
 import Sidebar from "./Sidebar";
 import { Game as G } from "../entities";
-import { GameStatusEnum, RegionsEnum } from "../types/game";
-import { TerrainEnum } from "../types/tower";
+import { GameStatusEnum, RegionsEnum, TerrainEnum } from "../types";
 import StarterSelectModal from "./StarterSelectModal";
 
 const Game = () => {

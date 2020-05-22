@@ -1,29 +1,9 @@
-import { IconType } from "react-icons/lib/cjs";
-
-export interface ICoordinates {
-  x: number;
-  y: number;
-}
-
-export interface ITerrainColors {
-  path: { primary: string; secondary: string };
-  obstacle: { primary: string; secondary: string };
-  main: { primary: string; secondary: string };
-  other: { primary: string; secondary: string };
-}
-
-export enum CellVariantEnum {
-  PATH = "PATH",
-  OBSTACLE = "OBSTACLE",
-  MAIN = "MAIN",
-  OTHER = "OTHER",
-}
-
-export interface IItem {
-  id: number;
-  item: string;
-  img: string | IconType;
-  price: number;
-  description: string;
-  isDraggable: boolean;
-}
+// Enums
+export { AttackSizeEnum } from "./AttackSizeEnum";
+export { AttackTypeEnum } from "./AttackTypeEnum";
+export { CellVariantEnum } from "./CellVariantEnum";
+export { GameStatusEnum } from "./GameStatusEnum";
+export { RarityEnum } from "./RarityEnum";
+export { RegionsEnum } from "./RegionsEnum";
+export { ResetTypeEnum } from "./ResetTypeEnum";
+export { TerrainEnum } from "./TerrainEnum";

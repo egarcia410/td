@@ -1,10 +1,10 @@
 import React, { memo, useState, useEffect } from "react";
 import { Box } from "@chakra-ui/core";
-import Enemies from "./Enemies";
 import { Game } from "../entities";
+import { TerrainEnum } from "../types";
+import Enemies from "./Enemies";
 import FieldTowers from "./FieldTowers";
 import Bullets from "./Bullets";
-import { TerrainEnum } from "../types/tower";
 
 interface IFieldProps {
   game: Game;

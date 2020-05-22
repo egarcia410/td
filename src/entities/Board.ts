@@ -1,7 +1,7 @@
 import { Dispatch } from "react";
 import { Cell } from "./Cell";
-import { ITerrainColors, CellVariantEnum } from "../types";
-import { TerrainEnum } from "../types/tower";
+import { CellVariantEnum, TerrainEnum } from "../types";
+import { ITerrainColors } from "../types/ITerrainColors";
 
 export class Board {
   terrain: TerrainEnum;

@@ -5,9 +5,9 @@ import {
   AttackSizeEnum,
   TerrainEnum,
   RarityEnum,
-} from "../types/tower";
-import { RegionsEnum } from "../types/game";
-import { allBaseTowers } from "../utils/baseTowers";
+  RegionsEnum,
+} from "../types";
+import { allBaseTowers } from "../utils";
 
 export class PartyTower extends BaseTower {
   speed: number;
