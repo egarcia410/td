@@ -1,7 +1,7 @@
 import { IItem } from "../types/IItem";
-import Pokeball from "../items/pokeball.png";
-import HealthPotion from "../items/health-potion.png";
-import Pokedoll from "../items/poke-doll.png";
+import Pokeball from "../assets/items/pokeball.png";
+import HealthPotion from "../assets/items/health-potion.png";
+import Pokedoll from "../assets/items/poke-doll.png";
 import { GiCube, GiBulldozer } from "react-icons/gi";
 
 export const items = new Map<number, IItem>([
