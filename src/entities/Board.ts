@@ -16,7 +16,6 @@ export class Board {
   numOfRows: number;
   constructor(terrain: TerrainEnum, terrainColors: ITerrainColors) {
     this.terrain = terrain;
-    // TODO: Create helper function to get terrainColors based on terrain type
     this.terrainColors = terrainColors;
     this.boardEl = null;
     this.cells = [];
@@ -78,17 +77,10 @@ export class Board {
         Math.floor(Math.random() * Math.floor(100)) < this.otherPercentage;
       if (isOther) {
         if (cell.variant === CellVariantEnum.MAIN) {
-          // Add random other cells
           cell.cellEl.style.backgroundColor = this.terrainColors.other.primary;
           cell.cellEl.style.border = `1px solid ${this.terrainColors.other.secondary}`;
           cell.variant = CellVariantEnum.OTHER;
         }
-        // else if (cell.variant === CellVariantEnum.WATER) {
-        //   // Add random main cells
-        //   cell.cellEl.style.backgroundColor = this.terrainColors.land.primary;
-        //   cell.cellEl.style.border = `1px solid ${this.terrainColors.land.secondary}`;
-        //   cell.variant = CellVariantEnum.LAND;
-        // }
       }
     });
   };

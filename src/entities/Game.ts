@@ -113,7 +113,8 @@ export class Game {
   };
 
   private initializeEnemies = () => {
-    for (let i = 0; i < this.enemiesPerWave[this.currentWaveNumber - 1]; i++) {
+    for (let i = 0; i < 2; i++) {
+      // TODO: Randomize number of enemies per wave
       const rarity = this.getRandomRarity();
       const baseTowersByTerrain = this.baseTowers.get(this.terrain)!;
       const baseTowersByRarity = baseTowersByTerrain.get(rarity)!;
@@ -306,8 +307,15 @@ export class Game {
       }
       case GameStatusEnum.COMPLETED_WAVE: {
         this.currentWaveNumber += 1;
+        this.dispatch(["currentWaveNumber"]);
+        if (this.currentWaveNumber % 2 === 0) {
+          this.currentGymLeaderIndex += 1;
+          if (this.currentGymLeaderIndex < this.gymLeaders.length) {
+            this.updateTerrainAndBoard();
+          }
+        }
         this.money += 50;
-        this.dispatch(["money", "currentWaveNumber"]);
+        this.dispatch(["money"]);
         this.deactivateGameTimer();
         break;
       }
@@ -474,6 +482,17 @@ export class Game {
       fieldCell.cellEl.style.border = `1px solid ${this.terrainColors.main.secondary}`;
       this.consumeItem(6);
     }
+  };
+
+  updateTerrainAndBoard = () => {
+    this.terrain = this.gymLeaders[this.currentGymLeaderIndex].terrain;
+    this.terrainColors = terrainColors.get(this.terrain)!;
+    this.board.terrain = this.terrain;
+    this.board.terrainColors = this.terrainColors;
+    this.board.initializeBoard(this.dispatch);
+    this.fieldTowers.clear();
+    this.dispatch(["fieldTowers", "terrain", "terrainColors"]);
+    this.initializeEnemies();
   };
 
   // ANIMATE
@@ -660,7 +679,7 @@ export class Game {
               (enemy) => enemy.id !== damagedEnemy.id
             );
             if (!this.enemies.length) {
-              if (this.currentWaveNumber === 10) {
+              if (this.currentWaveNumber === this.gymLeaders.length * 10) {
                 this.updateGameStatus(GameStatusEnum.SUCCESS_GAME_OVER);
               } else {
                 this.updateGameStatus(GameStatusEnum.COMPLETED_WAVE);

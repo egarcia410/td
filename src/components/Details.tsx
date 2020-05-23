@@ -11,7 +11,7 @@ interface IDetailsProps extends BoxProps {
 
 const Details: React.FC<IDetailsProps> = ({ game, ...rest }) => {
   const [
-    { addListener, health, money, currentWaveNumber, partyTowers },
+    { addListener, health, money, currentWaveNumber, partyTowers, gymLeaders },
     update,
   ] = useState(game);
 
@@ -44,7 +44,7 @@ const Details: React.FC<IDetailsProps> = ({ game, ...rest }) => {
       <Flex direction="column" alignItems="center">
         <Box as={TiWaves} aria-label="wave" color="blue.400" size="1.5rem" />
         <Text fontSize="1.25rem" fontWeight="500" color="gray.400">
-          {currentWaveNumber}/10
+          {currentWaveNumber}/{gymLeaders.length * 10}
         </Text>
       </Flex>
       <Flex direction="column" alignItems="center">
