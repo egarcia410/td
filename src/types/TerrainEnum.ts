@@ -1,5 +1,4 @@
 export enum TerrainEnum {
-  ALL = "ALL",
   GRASS = "GRASS", // TODO: Make this the generic type
   ROCK = "ROCK",
   FIRE = "FIRE",
@@ -9,4 +8,5 @@ export enum TerrainEnum {
   ELECTRIC = "ELECTRIC",
   POISON = "POISON",
   PSYCHIC = "PSYCHIC",
+  GROUND = "GROUND",
 }

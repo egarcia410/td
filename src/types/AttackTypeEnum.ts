@@ -8,4 +8,5 @@ export enum AttackTypeEnum {
   ELECTRIC = "ELECTRIC",
   POISON = "POISON",
   PSYCHIC = "PSYCHIC",
+  GROUND = "GROUND",
 }

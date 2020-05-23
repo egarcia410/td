@@ -59,7 +59,7 @@ export const gymLeaders = new Map<RegionsEnum, IGymLeader[]>([
       {
         name: "Giovanni",
         location: "Viridian City",
-        terrain: TerrainEnum.ALL,
+        terrain: TerrainEnum.GROUND,
         badge: EarthBadge,
       },
     ],

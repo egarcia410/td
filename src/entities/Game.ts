@@ -14,11 +14,13 @@ import { ITerrainColors } from "../types/ITerrainColors";
 import { IBaseTower } from "../types/IBaseTower";
 import { IListener } from "../types/IListener";
 import { IMessage } from "../types/IMessage";
+import { IGymLeader } from "../types/IGymLeader";
 import {
   terrainColors,
   regionStarters,
-  getBaseTowers,
   allBaseTowers,
+  getBaseTowersByRegion,
+  gymLeaders,
 } from "../utils";
 // Entities
 import {
@@ -36,6 +38,8 @@ export class Game {
   gameTimer: number;
   intervalId: number;
   health: number;
+  currentGymLeaderIndex: number;
+  gymLeaders: IGymLeader[];
   terrain: TerrainEnum;
   terrainColors: ITerrainColors;
   board: Board;
@@ -53,18 +57,20 @@ export class Game {
   money: number;
   inventory: Map<number, number>;
   message: IMessage | null;
-  constructor(terrain: TerrainEnum, region: RegionsEnum) {
+  constructor(region: RegionsEnum) {
     this.listeners = new Map();
     this.status = GameStatusEnum.IDLE;
     this.gameTimer = 0;
     this.intervalId = 0;
     this.health = 100;
-    this.terrain = terrain;
+    this.currentGymLeaderIndex = 0;
+    this.gymLeaders = gymLeaders.get(region)!;
+    this.terrain = this.gymLeaders[this.currentGymLeaderIndex].terrain;
     this.terrainColors = terrainColors.get(this.terrain)!;
     this.board = new Board(this.terrain, this.terrainColors);
     this.region = region;
-    this.starters = regionStarters.get(this.region)!;
-    this.baseTowers = getBaseTowers();
+    this.starters = regionStarters.get(region)!;
+    this.baseTowers = getBaseTowersByRegion(region);
     this.partyTowers = new Map();
     this.fieldTowers = new Map();
     this.enemiesPerWave = [2, 2, 2, 2, 2, 2, 2, 3, 2, 2];

@@ -9,17 +9,52 @@ import { IBaseTower } from "../types/IBaseTower";
 import * as towers from "../towers";
 import { bulletColors } from "./bullet-colors";
 
-export const getBaseTowers = () => {
+export const getBaseTowersByRegion = (region: RegionsEnum) => {
   const baseTowers = new Map<TerrainEnum, Map<RarityEnum, IBaseTower[]>>();
-  const towersByTerrain = getBaseTowersByTerrain();
+  const towersByTerrain = sortBaseTowersByTerrainAndRegion(region);
   towersByTerrain.forEach((towers, terrain) => {
-    const towersByRarity = getBaseTowersByRarity(towers);
+    const towersByRarity = sortBaseTowersByRarity(towers);
     baseTowers.set(terrain, towersByRarity);
   });
   return baseTowers;
 };
 
-export const getBaseTowersByTerrain = () => {
+export const sortBaseTowersByTerrainAndRegion = (region: RegionsEnum) => {
+  const towersByTerrain = new Map<TerrainEnum, IBaseTower[]>();
+  const airTerrainTowers: IBaseTower[] = [];
+  allBaseTowers.forEach((bTower) => {
+    if (bTower.region === region) {
+      bTower.terrain.forEach((terrain) => {
+        if (terrain === TerrainEnum.FLYING) {
+          airTerrainTowers.push(bTower);
+        }
+        const towers = towersByTerrain.get(terrain) || [];
+        towersByTerrain.set(terrain, [...towers, bTower]);
+      });
+    }
+  });
+  // Add air towers to all terrains
+  towersByTerrain.forEach((towers, terrain) => {
+    if (terrain !== TerrainEnum.FLYING) {
+      airTerrainTowers.forEach((airTower) => {
+        towersByTerrain.set(terrain, [...towers, airTower]);
+      });
+    }
+  });
+  return towersByTerrain;
+};
+
+export const getAllBaseTowers = () => {
+  const baseTowers = new Map<TerrainEnum, Map<RarityEnum, IBaseTower[]>>();
+  const towersByTerrain = sortAllBaseTowersByTerrain();
+  towersByTerrain.forEach((towers, terrain) => {
+    const towersByRarity = sortBaseTowersByRarity(towers);
+    baseTowers.set(terrain, towersByRarity);
+  });
+  return baseTowers;
+};
+
+export const sortAllBaseTowersByTerrain = () => {
   const towersByTerrain = new Map<TerrainEnum, IBaseTower[]>();
   const airTerrainTowers: IBaseTower[] = [];
   allBaseTowers.forEach((bTower) => {
@@ -42,7 +77,7 @@ export const getBaseTowersByTerrain = () => {
   return towersByTerrain;
 };
 
-export const getBaseTowersByRarity = (bTowers: IBaseTower[]) => {
+export const sortBaseTowersByRarity = (bTowers: IBaseTower[]) => {
   const towersByRarity = new Map<RarityEnum, IBaseTower[]>();
   bTowers.forEach((bTower) => {
     const towerByRarity = towersByRarity.get(bTower.rarity) || [];
@@ -132,7 +167,7 @@ export const allBaseTowers = new Map<number, IBaseTower>([
       baseAttack: 52,
       baseSpeed: 65,
       range: 1,
-      terrain: [TerrainEnum.GRASS],
+      terrain: [TerrainEnum.FIRE],
       rarity: RarityEnum.COMMON,
       region: RegionsEnum.KANTO,
       exp: 0,
@@ -154,7 +189,7 @@ export const allBaseTowers = new Map<number, IBaseTower>([
       baseAttack: 64,
       baseSpeed: 65,
       range: 2,
-      terrain: [TerrainEnum.GRASS],
+      terrain: [TerrainEnum.FIRE],
       rarity: RarityEnum.UNCOMMON,
       region: RegionsEnum.KANTO,
       exp: 0,
@@ -176,7 +211,7 @@ export const allBaseTowers = new Map<number, IBaseTower>([
       baseAttack: 84,
       baseSpeed: 100,
       range: 3,
-      terrain: [TerrainEnum.GRASS, TerrainEnum.FLYING],
+      terrain: [TerrainEnum.FIRE, TerrainEnum.FLYING],
       rarity: RarityEnum.RARE,
       region: RegionsEnum.KANTO,
       exp: 0,
@@ -243,6 +278,292 @@ export const allBaseTowers = new Map<number, IBaseTower>([
       baseSpeed: 78,
       range: 3,
       terrain: [TerrainEnum.WATER],
+      rarity: RarityEnum.RARE,
+      region: RegionsEnum.KANTO,
+      exp: 0,
+      level: 1,
+      levelToEvolve: null,
+      evolutionBaseId: null,
+    },
+  ],
+  [
+    25,
+    {
+      baseId: 25,
+      component: towers.Pikachu,
+      name: "Pikachu",
+      attackType: AttackTypeEnum.ELECTRIC,
+      attackSize: AttackSizeEnum.MEDIUM,
+      attackColor: bulletColors.get(AttackTypeEnum.ELECTRIC)!,
+      baseHealth: 33,
+      baseAttack: 55,
+      baseSpeed: 90,
+      range: 2,
+      terrain: [TerrainEnum.ELECTRIC],
+      rarity: RarityEnum.COMMON,
+      region: RegionsEnum.KANTO,
+      exp: 0,
+      level: 1,
+      levelToEvolve: 25,
+      evolutionBaseId: 26,
+    },
+  ],
+  [
+    26,
+    {
+      baseId: 26,
+      component: towers.Raichu,
+      name: "Raichu",
+      attackType: AttackTypeEnum.ELECTRIC,
+      attackSize: AttackSizeEnum.LARGE,
+      attackColor: bulletColors.get(AttackTypeEnum.ELECTRIC)!,
+      baseHealth: 60,
+      baseAttack: 90,
+      baseSpeed: 110,
+      range: 3,
+      terrain: [TerrainEnum.ELECTRIC],
+      rarity: RarityEnum.UNCOMMON,
+      region: RegionsEnum.KANTO,
+      exp: 0,
+      level: 1,
+      levelToEvolve: null,
+      evolutionBaseId: null,
+    },
+  ],
+  [
+    29,
+    {
+      baseId: 29,
+      component: towers.NidoranF,
+      name: "Nidoran ♀",
+      attackType: AttackTypeEnum.POISON,
+      attackSize: AttackSizeEnum.SMALL,
+      attackColor: bulletColors.get(AttackTypeEnum.POISON)!,
+      baseHealth: 55,
+      baseAttack: 47,
+      baseSpeed: 41,
+      range: 1,
+      terrain: [TerrainEnum.POISON],
+      rarity: RarityEnum.COMMON,
+      region: RegionsEnum.KANTO,
+      exp: 0,
+      level: 1,
+      levelToEvolve: 16,
+      evolutionBaseId: 30,
+    },
+  ],
+  [
+    30,
+    {
+      baseId: 30,
+      component: towers.Nidorina,
+      name: "Nidorina",
+      attackType: AttackTypeEnum.POISON,
+      attackSize: AttackSizeEnum.MEDIUM,
+      attackColor: bulletColors.get(AttackTypeEnum.POISON)!,
+      baseHealth: 70,
+      baseAttack: 62,
+      baseSpeed: 56,
+      range: 2,
+      terrain: [TerrainEnum.POISON],
+      rarity: RarityEnum.UNCOMMON,
+      region: RegionsEnum.KANTO,
+      exp: 0,
+      level: 1,
+      levelToEvolve: 25,
+      evolutionBaseId: 31,
+    },
+  ],
+  [
+    31,
+    {
+      baseId: 31,
+      component: towers.Nidoqueen,
+      name: "Nidoqueen",
+      attackType: AttackTypeEnum.POISON,
+      attackSize: AttackSizeEnum.LARGE,
+      attackColor: bulletColors.get(AttackTypeEnum.POISON)!,
+      baseHealth: 90,
+      baseAttack: 92,
+      baseSpeed: 76,
+      range: 3,
+      terrain: [TerrainEnum.POISON, TerrainEnum.GROUND],
+      rarity: RarityEnum.RARE,
+      region: RegionsEnum.KANTO,
+      exp: 0,
+      level: 1,
+      levelToEvolve: null,
+      evolutionBaseId: null,
+    },
+  ],
+  [
+    63,
+    {
+      baseId: 63,
+      component: towers.Abra,
+      name: "Abra",
+      attackType: AttackTypeEnum.PSYCHIC,
+      attackSize: AttackSizeEnum.SMALL,
+      attackColor: bulletColors.get(AttackTypeEnum.PSYCHIC)!,
+      baseHealth: 25,
+      baseAttack: 20,
+      baseSpeed: 90,
+      range: 1,
+      terrain: [TerrainEnum.PSYCHIC],
+      rarity: RarityEnum.COMMON,
+      region: RegionsEnum.KANTO,
+      exp: 0,
+      level: 1,
+      levelToEvolve: 16,
+      evolutionBaseId: 64,
+    },
+  ],
+  [
+    64,
+    {
+      baseId: 64,
+      component: towers.Kadabra,
+      name: "Kadabra",
+      attackType: AttackTypeEnum.PSYCHIC,
+      attackSize: AttackSizeEnum.MEDIUM,
+      attackColor: bulletColors.get(AttackTypeEnum.PSYCHIC)!,
+      baseHealth: 40,
+      baseAttack: 35,
+      baseSpeed: 105,
+      range: 2,
+      terrain: [TerrainEnum.PSYCHIC],
+      rarity: RarityEnum.UNCOMMON,
+      region: RegionsEnum.KANTO,
+      exp: 0,
+      level: 1,
+      levelToEvolve: 25,
+      evolutionBaseId: 65,
+    },
+  ],
+  [
+    65,
+    {
+      baseId: 65,
+      component: towers.Alakazam,
+      name: "Alakazam",
+      attackType: AttackTypeEnum.PSYCHIC,
+      attackSize: AttackSizeEnum.LARGE,
+      attackColor: bulletColors.get(AttackTypeEnum.PSYCHIC)!,
+      baseHealth: 55,
+      baseAttack: 50,
+      baseSpeed: 120,
+      range: 3,
+      terrain: [TerrainEnum.PSYCHIC],
+      rarity: RarityEnum.RARE,
+      region: RegionsEnum.KANTO,
+      exp: 0,
+      level: 1,
+      levelToEvolve: null,
+      evolutionBaseId: null,
+    },
+  ],
+  [
+    74,
+    {
+      baseId: 74,
+      component: towers.Geodude,
+      name: "Geodude",
+      attackType: AttackTypeEnum.ROCK,
+      attackSize: AttackSizeEnum.SMALL,
+      attackColor: bulletColors.get(AttackTypeEnum.ROCK)!,
+      baseHealth: 40,
+      baseAttack: 80,
+      baseSpeed: 20,
+      range: 1,
+      terrain: [TerrainEnum.ROCK, TerrainEnum.GROUND],
+      rarity: RarityEnum.COMMON,
+      region: RegionsEnum.KANTO,
+      exp: 0,
+      level: 1,
+      levelToEvolve: 25,
+      evolutionBaseId: 75,
+    },
+  ],
+  [
+    75,
+    {
+      baseId: 75,
+      component: towers.Graveler,
+      name: "Graveler",
+      attackType: AttackTypeEnum.ROCK,
+      attackSize: AttackSizeEnum.MEDIUM,
+      attackColor: bulletColors.get(AttackTypeEnum.ROCK)!,
+      baseHealth: 55,
+      baseAttack: 95,
+      baseSpeed: 35,
+      range: 2,
+      terrain: [TerrainEnum.ROCK, TerrainEnum.GROUND],
+      rarity: RarityEnum.UNCOMMON,
+      region: RegionsEnum.KANTO,
+      exp: 0,
+      level: 1,
+      levelToEvolve: 32,
+      evolutionBaseId: 76,
+    },
+  ],
+  [
+    76,
+    {
+      baseId: 76,
+      component: towers.Golem,
+      name: "Golem",
+      attackType: AttackTypeEnum.ROCK,
+      attackSize: AttackSizeEnum.LARGE,
+      attackColor: bulletColors.get(AttackTypeEnum.ROCK)!,
+      baseHealth: 80,
+      baseAttack: 120,
+      baseSpeed: 45,
+      range: 3,
+      terrain: [TerrainEnum.ROCK, TerrainEnum.GROUND],
+      rarity: RarityEnum.RARE,
+      region: RegionsEnum.KANTO,
+      exp: 0,
+      level: 1,
+      levelToEvolve: null,
+      evolutionBaseId: null,
+    },
+  ],
+  [
+    104,
+    {
+      baseId: 104,
+      component: towers.Cubone,
+      name: "Cubone",
+      attackType: AttackTypeEnum.GROUND,
+      attackSize: AttackSizeEnum.MEDIUM,
+      attackColor: bulletColors.get(AttackTypeEnum.GROUND)!,
+      baseHealth: 50,
+      baseAttack: 50,
+      baseSpeed: 35,
+      range: 2,
+      terrain: [TerrainEnum.GROUND],
+      rarity: RarityEnum.UNCOMMON,
+      region: RegionsEnum.KANTO,
+      exp: 0,
+      level: 1,
+      levelToEvolve: 28,
+      evolutionBaseId: 105,
+    },
+  ],
+  [
+    105,
+    {
+      baseId: 105,
+      component: towers.Marowak,
+      name: "Marowak",
+      attackType: AttackTypeEnum.GROUND,
+      attackSize: AttackSizeEnum.LARGE,
+      attackColor: bulletColors.get(AttackTypeEnum.GROUND)!,
+      baseHealth: 60,
+      baseAttack: 80,
+      baseSpeed: 45,
+      range: 2,
+      terrain: [TerrainEnum.GROUND],
       rarity: RarityEnum.RARE,
       region: RegionsEnum.KANTO,
       exp: 0,
