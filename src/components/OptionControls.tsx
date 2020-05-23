@@ -7,9 +7,9 @@ import {
   IoMdRefreshCircle,
 } from "react-icons/io";
 import { useTypedSelector } from "../hooks";
-import ThemeSelector from "./ThemeSelector";
 import { Game } from "../entities";
-import { ResetTypeEnum } from "../types/ResetTypeEnum";
+import { ResetTypeEnum } from "../types";
+import ThemeSelector from "./ThemeSelector";
 
 interface IOptionControlsProps {
   game: Game;

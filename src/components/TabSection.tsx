@@ -12,9 +12,9 @@ import {
 import { MdGroupWork } from "react-icons/md";
 import { GiLightBackpack } from "react-icons/gi";
 import { FaStore, FaTrophy } from "react-icons/fa";
-import PartyTowers from "./PartyTowers";
 import { useTypedSelector } from "../hooks";
 import { Game } from "../entities";
+import PartyTowers from "./PartyTowers";
 import ContentContainer from "./ContentContainer";
 import InventoryItems from "./InventoryItems";
 import ShopItems from "./ShopItems";

@@ -1,9 +1,9 @@
 import React, { memo } from "react";
 import { useColorMode, useTheme, Stack } from "@chakra-ui/core";
+import { Game } from "../entities";
 import Controls from "./Controls";
 import Details from "./Details";
 import TabSection from "./TabSection";
-import { Game } from "../entities";
 import MessageControl from "./MessageControl";
 
 interface ISideBarProps {

@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from "react";
-import { Game } from "../entities";
 import { Box } from "@chakra-ui/core";
+import { Game } from "../entities";
 
 interface IBulletsProps {
   game: Game;

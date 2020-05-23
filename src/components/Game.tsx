@@ -7,10 +7,10 @@ import React, {
   useCallback,
 } from "react";
 import { Grid, useColorMode, useTheme } from "@chakra-ui/core";
-import Board from "./Board";
-import Sidebar from "./Sidebar";
 import { Game as G } from "../entities";
 import { GameStatusEnum, RegionsEnum, TerrainEnum } from "../types";
+import Board from "./Board";
+import Sidebar from "./Sidebar";
 import StarterSelectModal from "./StarterSelectModal";
 
 const Game = () => {

@@ -13,6 +13,7 @@ import {
 import { ITerrainColors } from "../types/ITerrainColors";
 import { IBaseTower } from "../types/IBaseTower";
 import { IListener } from "../types/IListener";
+import { IMessage } from "../types/IMessage";
 import {
   terrainColors,
   regionStarters,
@@ -39,8 +40,8 @@ export class Game {
   terrainColors: ITerrainColors;
   board: Board;
   region: RegionsEnum;
-  starters: any[]; // TODO: Update type definition
-  baseTowers: Map<TerrainEnum, Map<RarityEnum, IBaseTower[]>>; // TODO: Update with BaseTower class instance
+  starters: IBaseTower[];
+  baseTowers: Map<TerrainEnum, Map<RarityEnum, IBaseTower[]>>;
   partyTowers: Map<string, PartyTower>;
   fieldTowers: Map<string, FieldTower>;
   enemiesPerWave: number[];
@@ -51,7 +52,7 @@ export class Game {
   unassignedEnemies: HTMLDivElement[];
   money: number;
   inventory: Map<number, number>;
-  message: { title: string; description: string; status: string } | null;
+  message: IMessage | null;
   constructor(terrain: TerrainEnum, region: RegionsEnum) {
     this.listeners = new Map();
     this.status = GameStatusEnum.IDLE;
