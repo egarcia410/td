@@ -78,7 +78,7 @@ const TabSection: React.FC<ITabSectionProps> = ({ game }) => {
           <Box as={FaTrophy} size="2rem" />
         </Tab>
       </TabList>
-      <TabPanels>
+      <TabPanels h="75vh" overflow="auto">
         <TabPanel>
           <ContentContainer>
             <PartyTowers game={game} />

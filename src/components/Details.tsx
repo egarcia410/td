@@ -11,13 +11,27 @@ interface IDetailsProps extends BoxProps {
 
 const Details: React.FC<IDetailsProps> = ({ game, ...rest }) => {
   const [
-    { addListener, health, money, currentWaveNumber, partyTowers, gymLeaders },
+    {
+      addListener,
+      health,
+      money,
+      currentWaveNumber,
+      partyTowers,
+      gymLeaders,
+      maxPartySize,
+    },
     update,
   ] = useState(game);
 
   useEffect(() => {
     addListener({
-      valuesToWatch: ["health", "money", "currentWaveNumber", "partyTowers"],
+      valuesToWatch: [
+        "health",
+        "money",
+        "currentWaveNumber",
+        "partyTowers",
+        "maxPartySize",
+      ],
       update,
     });
   }, [addListener]);
@@ -55,7 +69,7 @@ const Details: React.FC<IDetailsProps> = ({ game, ...rest }) => {
           size="1.5rem"
         />
         <Text fontSize="1.25rem" fontWeight="500" color="gray.400">
-          {partyTowers.size}/6
+          {partyTowers.size}/{maxPartySize}
         </Text>
       </Flex>
     </Flex>

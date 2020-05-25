@@ -54,6 +54,12 @@ const Field: React.FC<IFieldProps> = ({ game }) => {
           } else {
             game.useMainBlock(fieldCellEl);
           }
+        } else if (+id === 8) {
+          game.increaseSpeedBonus(fieldCellId);
+        } else if (+id === 9) {
+          game.increaseRangeBonus(fieldCellId);
+        } else if (+id === 10) {
+          game.increaseAttackBonus(fieldCellId);
         }
       }
     } else {

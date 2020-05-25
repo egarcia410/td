@@ -29,8 +29,8 @@ const InventoryItems: React.FC<IInventoryItemsProps> = ({ game }) => {
     isDraggable: boolean,
     quantity: number
   ) => {
+    const consumedItem = items.get(id)!;
     if (!isDraggable && quantity > 0) {
-      const consumedItem = items.get(id)!;
       if (consumedItem.item === "Health Potion") {
         game.useHealthPotion();
       }
@@ -41,7 +41,7 @@ const InventoryItems: React.FC<IInventoryItemsProps> = ({ game }) => {
     const inventoryItems: any[] = [];
     inventory.forEach((quantity, id) => {
       const inventoryItem = items.get(id)!;
-      const { isDraggable, item, img } = inventoryItem;
+      const { isDraggable, item, img, color } = inventoryItem;
       let itemColor: string = "";
       if (typeof img !== "string") {
         if (terrain === TerrainEnum.WATER) {
@@ -50,14 +50,14 @@ const InventoryItems: React.FC<IInventoryItemsProps> = ({ game }) => {
               ? terrainColors.other.secondary
               : item === "Water Block"
               ? terrainColors.main.secondary
-              : "#FEFB54";
+              : color!;
         } else {
           itemColor =
             item === "Land Block"
               ? terrainColors.main.secondary
               : item === "Water Block"
               ? terrainColors.other.secondary
-              : "#FEFB54";
+              : color!;
         }
       }
       inventoryItems.push(

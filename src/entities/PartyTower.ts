@@ -13,6 +13,9 @@ export class PartyTower extends BaseTower {
   speed: number;
   attack: number;
   expNeededToLevel: Map<number, number>;
+  speedBonus: number;
+  attackBonus: number;
+  rangeBonus: number;
   constructor(
     id: string,
     baseId: number,
@@ -54,8 +57,12 @@ export class PartyTower extends BaseTower {
       evolutionBaseId
     );
     this.expNeededToLevel = this.generateExpNeededToLevel();
+    this.speedBonus = 0;
+    this.attackBonus = 0;
+    this.rangeBonus = 0;
     this.attack = this.generateAttackStat();
     this.speed = this.generateSpeedStat();
+    this.range = range;
   }
 
   incrementExp = (dispatch: Dispatch<any>) => {
@@ -80,11 +87,11 @@ export class PartyTower extends BaseTower {
   };
 
   generateAttackStat = () => {
-    return (this.level * 0.5 + this.baseAttack) / 10;
+    return (this.level * 0.5 + this.baseAttack) / 10 + this.attackBonus;
   };
 
   generateSpeedStat = () => {
-    return (this.level * 0.2 + this.baseSpeed) / 10;
+    return (this.level * 0.2 + this.baseSpeed) / 10 + this.speedBonus;
   };
 
   updateStats = () => {
@@ -102,7 +109,7 @@ export class PartyTower extends BaseTower {
     this.baseHealth = evolvedTower.baseHealth;
     this.baseSpeed = evolvedTower.baseSpeed;
     this.baseAttack = evolvedTower.baseAttack;
-    this.range = evolvedTower.range;
+    this.range = evolvedTower.range + this.rangeBonus;
     this.terrain = evolvedTower.terrain;
     this.rarity = evolvedTower.rarity;
     this.region = evolvedTower.region;

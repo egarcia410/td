@@ -7,4 +7,5 @@ export interface IItem {
   price: number;
   description: string;
   isDraggable: boolean;
+  color?: string;
 }

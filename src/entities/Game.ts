@@ -57,6 +57,7 @@ export class Game {
   money: number;
   inventory: Map<number, number>;
   message: IMessage | null;
+  maxPartySize: number;
   constructor(region: RegionsEnum) {
     this.listeners = new Map();
     this.status = GameStatusEnum.IDLE;
@@ -79,9 +80,10 @@ export class Game {
     this.bullets = [];
     this.unassignedBullets = [];
     this.unassignedEnemies = [];
-    this.money = 500;
+    this.money = 2200;
     this.inventory = new Map();
     this.message = null;
+    this.maxPartySize = 4;
   }
 
   addListener = (listener: IListener) => {
@@ -292,6 +294,16 @@ export class Game {
     return lvlTotal / this.partyTowers.size;
   };
 
+  private getFieldTowerId = (fieldCellId: number) => {
+    let fieldTowerId = null;
+    this.fieldTowers.forEach((fieldTower) => {
+      if (fieldTower.cellRef.id === fieldCellId) {
+        fieldTowerId = fieldTower.partyTowerRef.id;
+      }
+    });
+    return fieldTowerId;
+  };
+
   // UPDATE
   updateGameStatus = (gameStatus: GameStatusEnum) => {
     this.status = gameStatus;
@@ -353,6 +365,15 @@ export class Game {
     if (this.status === GameStatusEnum.PAUSED) {
       return;
     }
+    if (this.partyTowers.size === this.maxPartySize) {
+      this.message = {
+        title: "Party Size Limit",
+        description: `You have reached party size limit of ${this.maxPartySize}`,
+        status: "warning",
+      };
+      this.dispatch(["message"]);
+      return;
+    }
     const capturedEnemy = this.enemies.find((enemy) => {
       const enemyElement = enemy.enemyElement;
       if (enemyElement) {
@@ -408,26 +429,40 @@ export class Game {
     }
   };
 
-  purchaseItem = (id: number, item: string, price: number) => {
+  canAffordItem = (price: number) => {
     if (this.money - price >= 0) {
-      this.money -= price;
-      const prevQuantity = this.inventory.get(id) || 0;
-      const newQuantity = prevQuantity + 1;
-      this.inventory.set(id, newQuantity);
-      this.message = {
-        title: "Purchase Complete",
-        description: `You bought a ${item}`,
-        status: "success",
-      };
-      this.dispatch(["money", "inventory", "message"]);
+      return true;
     }
+    return false;
+  };
+
+  purchaseItem = (item: string, price: number) => {
+    this.money -= price;
+    this.message = {
+      title: "Purchase Complete",
+      description: `You bought a ${item}`,
+      status: "success",
+    };
+    this.dispatch(["money", "message"]);
+  };
+
+  addItemToInventory = (id: number, item: string, price: number) => {
+    this.purchaseItem(item, price);
+    const prevQuantity = this.inventory.get(id) || 0;
+    const newQuantity = prevQuantity + 1;
+    this.inventory.set(id, newQuantity);
+    this.dispatch(["inventory"]);
   };
 
   consumeItem = (id: number) => {
     const prevQuantity = this.inventory.get(id);
     if (prevQuantity) {
       const newQuantity = prevQuantity - 1 >= 0 ? prevQuantity - 1 : 0;
-      this.inventory.set(id, newQuantity);
+      if (newQuantity === 0) {
+        this.inventory.delete(id);
+      } else {
+        this.inventory.set(id, newQuantity);
+      }
       this.dispatch(["inventory"]);
     }
   };
@@ -441,12 +476,7 @@ export class Game {
   };
 
   usePokeDoll = (fieldCellId: number) => {
-    let fieldTowerId = null;
-    this.fieldTowers.forEach((fieldTower) => {
-      if (fieldTower.cellRef.id === fieldCellId) {
-        fieldTowerId = fieldTower.partyTowerRef.id;
-      }
-    });
+    const fieldTowerId = this.getFieldTowerId(fieldCellId);
     if (fieldTowerId) {
       const { cellRef } = this.fieldTowers.get(fieldTowerId)!;
       cellRef.isOccupied = false;
@@ -481,6 +511,102 @@ export class Game {
       fieldCell.cellEl.style.backgroundColor = this.terrainColors.main.primary;
       fieldCell.cellEl.style.border = `1px solid ${this.terrainColors.main.secondary}`;
       this.consumeItem(6);
+    }
+  };
+
+  increasePartySize = (item: string, price: number) => {
+    if (this.maxPartySize < 8) {
+      this.maxPartySize += 2;
+      this.purchaseItem(item, price);
+      this.consumeItem(7);
+      this.message = {
+        title: "Party Size Limit",
+        description: `Party size limit increased to ${this.maxPartySize}`,
+        status: "success",
+      };
+      this.dispatch(["maxPartySize"]);
+    } else {
+      this.message = {
+        title: "Party Size Limit",
+        description: `You have reached party size limit of ${this.maxPartySize}`,
+        status: "info",
+      };
+    }
+    this.dispatch(["message"]);
+  };
+
+  increaseSpeedBonus = (fieldCellId: number) => {
+    const fieldTowerId = this.getFieldTowerId(fieldCellId);
+    if (fieldTowerId) {
+      const { partyTowerRef } = this.fieldTowers.get(fieldTowerId)!;
+      if (partyTowerRef.speedBonus + 1 < 4) {
+        partyTowerRef.speedBonus += 1;
+        this.consumeItem(8);
+        partyTowerRef.updateStats();
+        this.dispatch(["partyTowers"]);
+        this.message = {
+          title: "Speed Bonus",
+          description: `${partyTowerRef.name} has a speed bonus of ${partyTowerRef.speedBonus}`,
+          status: "success",
+        };
+      } else {
+        this.message = {
+          title: "Speed Bonus",
+          description: `${partyTowerRef.name} has reached max speed bonus of ${partyTowerRef.speedBonus}`,
+          status: "warning",
+        };
+      }
+      this.dispatch(["message"]);
+    }
+  };
+
+  increaseRangeBonus = (fieldCellId: number) => {
+    const fieldTowerId = this.getFieldTowerId(fieldCellId);
+    if (fieldTowerId) {
+      const { partyTowerRef } = this.fieldTowers.get(fieldTowerId)!;
+      if (partyTowerRef.rangeBonus + 1 < 2) {
+        partyTowerRef.rangeBonus += 1;
+        this.consumeItem(9);
+        partyTowerRef.range = partyTowerRef.range + partyTowerRef.rangeBonus;
+        this.dispatch(["partyTowers", "fieldTowers"]);
+        this.message = {
+          title: "Range Bonus",
+          description: `${partyTowerRef.name} has a range bonus of ${partyTowerRef.rangeBonus}`,
+          status: "success",
+        };
+      } else {
+        this.message = {
+          title: "Range Bonus",
+          description: `${partyTowerRef.name} has reached max range bonus of ${partyTowerRef.rangeBonus}`,
+          status: "warning",
+        };
+      }
+      this.dispatch(["message"]);
+    }
+  };
+
+  increaseAttackBonus = (fieldCellId: number) => {
+    const fieldTowerId = this.getFieldTowerId(fieldCellId);
+    if (fieldTowerId) {
+      const { partyTowerRef } = this.fieldTowers.get(fieldTowerId)!;
+      if (partyTowerRef.attackBonus + 1 < 4) {
+        partyTowerRef.attackBonus += 1;
+        this.consumeItem(10);
+        partyTowerRef.updateStats();
+        this.dispatch(["partyTowers"]);
+        this.message = {
+          title: "Attack Bonus",
+          description: `${partyTowerRef.name} has an attack bonus of ${partyTowerRef.attackBonus}`,
+          status: "success",
+        };
+      } else {
+        this.message = {
+          title: "Attack Bonus",
+          description: `${partyTowerRef.name} has reached max attack bonus of ${partyTowerRef.attackBonus}`,
+          status: "warning",
+        };
+      }
+      this.dispatch(["message"]);
     }
   };
 
