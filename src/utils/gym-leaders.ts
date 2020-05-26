@@ -1,4 +1,4 @@
-import { RegionsEnum, TerrainEnum } from "../types";
+import { RegionsEnum, TerrainEnum, AttackTypeEnum } from "../types";
 import { IGymLeader } from "../types/IGymLeader";
 
 import BoulderBadge from "../assets/badges/Boulder_Badge.png";
@@ -18,6 +18,7 @@ export const gymLeaders = new Map<RegionsEnum, IGymLeader[]>([
         name: "Brock",
         location: "Pewter City",
         terrain: TerrainEnum.ROCK,
+        terrainTypes: [TerrainEnum.ROCK, TerrainEnum.GROUND],
         badgeImg: BoulderBadge,
         badgeName: "Boulder",
       },
@@ -25,6 +26,7 @@ export const gymLeaders = new Map<RegionsEnum, IGymLeader[]>([
         name: "Misty",
         location: "Cerulean City",
         terrain: TerrainEnum.WATER,
+        terrainTypes: [TerrainEnum.WATER, TerrainEnum.ICE],
         badgeImg: CascadeBadge,
         badgeName: "Cascade",
       },
@@ -32,6 +34,7 @@ export const gymLeaders = new Map<RegionsEnum, IGymLeader[]>([
         name: "Lt. Surge",
         location: "Vermilion City",
         terrain: TerrainEnum.ELECTRIC,
+        terrainTypes: [TerrainEnum.ELECTRIC, TerrainEnum.NORMAL],
         badgeImg: ThunderBadge,
         badgeName: "Thunder",
       },
@@ -39,6 +42,7 @@ export const gymLeaders = new Map<RegionsEnum, IGymLeader[]>([
         name: "Erika",
         location: "Celadon City",
         terrain: TerrainEnum.GRASS,
+        terrainTypes: [TerrainEnum.GRASS, TerrainEnum.BUG],
         badgeImg: RainbowBadge,
         badgeName: "Rainbow",
       },
@@ -46,6 +50,7 @@ export const gymLeaders = new Map<RegionsEnum, IGymLeader[]>([
         name: "Koga & Janine",
         location: "Fuchsia City",
         terrain: TerrainEnum.POISON,
+        terrainTypes: [TerrainEnum.POISON, TerrainEnum.NORMAL],
         badgeImg: SoulBadge,
         badgeName: "Soul",
       },
@@ -53,6 +58,7 @@ export const gymLeaders = new Map<RegionsEnum, IGymLeader[]>([
         name: "Sabrina",
         location: "Saffron City",
         terrain: TerrainEnum.PSYCHIC,
+        terrainTypes: [TerrainEnum.PSYCHIC, TerrainEnum.NORMAL],
         badgeImg: MarshBadge,
         badgeName: "Marsh",
       },
@@ -60,6 +66,7 @@ export const gymLeaders = new Map<RegionsEnum, IGymLeader[]>([
         name: "Blaine",
         location: "Cinnabar Island",
         terrain: TerrainEnum.FIRE,
+        terrainTypes: [TerrainEnum.FIRE, TerrainEnum.NORMAL],
         badgeImg: VolcanoBadge,
         badgeName: "Volcano",
       },
@@ -67,6 +74,7 @@ export const gymLeaders = new Map<RegionsEnum, IGymLeader[]>([
         name: "Giovanni",
         location: "Viridian City",
         terrain: TerrainEnum.GROUND,
+        terrainTypes: [TerrainEnum.GROUND, TerrainEnum.NORMAL],
         badgeImg: EarthBadge,
         badgeName: "Earth",
       },

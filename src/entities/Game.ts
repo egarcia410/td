@@ -124,7 +124,11 @@ export class Game {
       this.playThrough * this.partyTowers.size * 6 + this.currentWaveNumber;
     for (let i = 0; i < numOfEnemies; i++) {
       const rarity = this.getRandomRarity();
-      const baseTowersByTerrain = this.baseTowers.get(this.terrain)!;
+      const currentGymLeader = this.gymLeaders[this.currentGymLeaderIndex];
+      const terrainTypes = currentGymLeader.terrainTypes;
+      const randomTerrainType =
+        terrainTypes[Math.floor(Math.random() * terrainTypes.length)];
+      const baseTowersByTerrain = this.baseTowers.get(randomTerrainType)!;
       const baseTowersByRarity = baseTowersByTerrain.get(rarity)!;
       const randomIndex = Math.floor(Math.random() * baseTowersByRarity.length);
       const {
