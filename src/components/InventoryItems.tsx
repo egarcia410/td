@@ -103,7 +103,13 @@ const InventoryItems: React.FC<IInventoryItemsProps> = ({ game }) => {
         </Grid>
       );
     });
-    return inventoryItems;
+    return inventoryItems.length ? (
+      inventoryItems
+    ) : (
+      <Text gridColumn="1 / span 2" textAlign="center" color="gray.400">
+        Buy an item from the shop!
+      </Text>
+    );
   };
 
   return <>{renderInventoryItems()}</>;

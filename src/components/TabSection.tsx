@@ -18,6 +18,7 @@ import PartyTowers from "./PartyTowers";
 import ContentContainer from "./ContentContainer";
 import InventoryItems from "./InventoryItems";
 import ShopItems from "./ShopItems";
+import Badges from "./Badges";
 
 interface ITabSectionProps {
   game: Game;
@@ -94,7 +95,11 @@ const TabSection: React.FC<ITabSectionProps> = ({ game }) => {
             <ShopItems game={game} />
           </ContentContainer>
         </TabPanel>
-        <TabPanel>BADGES</TabPanel>
+        <TabPanel>
+          <ContentContainer>
+            <Badges game={game} />
+          </ContentContainer>
+        </TabPanel>
       </TabPanels>
     </Tabs>
   );

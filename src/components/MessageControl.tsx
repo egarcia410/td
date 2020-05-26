@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, memo } from "react";
 import { useToast } from "@chakra-ui/core";
 import { Game } from "../entities";
+import GameModal from "./GameModal";
 
 interface IMessageControlProps {
   game: Game;
@@ -31,7 +32,11 @@ const MessageControl: React.FC<IMessageControlProps> = ({ game }) => {
     }
   }, [message, toast]);
 
-  return <div></div>;
+  return (
+    <>
+      <GameModal game={game} />
+    </>
+  );
 };
 
-export default MessageControl;
+export default memo(MessageControl);

@@ -58,13 +58,15 @@ export class Game {
   inventory: Map<number, number>;
   message: IMessage | null;
   maxPartySize: number;
+  displayModal: boolean;
+  badgeInventory: Map<string, string>;
   constructor(region: RegionsEnum) {
     this.listeners = new Map();
     this.status = GameStatusEnum.IDLE;
     this.gameTimer = 0;
     this.intervalId = 0;
     this.health = 100;
-    this.currentGymLeaderIndex = 0;
+    this.currentGymLeaderIndex = 6;
     this.gymLeaders = gymLeaders.get(region)!;
     this.terrain = this.gymLeaders[this.currentGymLeaderIndex].terrain;
     this.terrainColors = terrainColors.get(this.terrain)!;
@@ -75,7 +77,7 @@ export class Game {
     this.partyTowers = new Map();
     this.fieldTowers = new Map();
     this.enemiesPerWave = [2, 2, 2, 2, 2, 2, 2, 3, 2, 2];
-    this.currentWaveNumber = 1;
+    this.currentWaveNumber = 0;
     this.enemies = [];
     this.bullets = [];
     this.unassignedBullets = [];
@@ -84,6 +86,8 @@ export class Game {
     this.inventory = new Map();
     this.message = null;
     this.maxPartySize = 4;
+    this.displayModal = false;
+    this.badgeInventory = new Map();
   }
 
   addListener = (listener: IListener) => {
@@ -320,11 +324,16 @@ export class Game {
       case GameStatusEnum.COMPLETED_WAVE: {
         this.currentWaveNumber += 1;
         this.dispatch(["currentWaveNumber"]);
-        if (this.currentWaveNumber % 2 === 0) {
-          this.currentGymLeaderIndex += 1;
-          if (this.currentGymLeaderIndex < this.gymLeaders.length) {
-            this.updateTerrainAndBoard();
+        if (this.currentWaveNumber % 1 === 0) {
+          this.displayModal = true;
+          if (this.currentGymLeaderIndex + 1 < this.gymLeaders.length) {
+            const { badgeName, badgeImg } = this.gymLeaders[
+              this.currentGymLeaderIndex
+            ];
+            this.badgeInventory.set(badgeName, badgeImg);
+            this.dispatch(["badgeInventory"]);
           }
+          this.dispatch(["displayModal"]);
         }
         this.money += 50;
         this.dispatch(["money"]);
@@ -593,7 +602,7 @@ export class Game {
         partyTowerRef.attackBonus += 1;
         this.consumeItem(10);
         partyTowerRef.updateStats();
-        this.dispatch(["partyTowers"]);
+        this.dispatch(["partyTowers", "fieldTowers"]);
         this.message = {
           title: "Attack Bonus",
           description: `${partyTowerRef.name} has an attack bonus of ${partyTowerRef.attackBonus}`,
@@ -610,6 +619,12 @@ export class Game {
     }
   };
 
+  nextGymLeader = () => {
+    this.displayModal = false;
+    this.currentGymLeaderIndex += 1;
+    this.updateTerrainAndBoard();
+  };
+
   updateTerrainAndBoard = () => {
     this.terrain = this.gymLeaders[this.currentGymLeaderIndex].terrain;
     this.terrainColors = terrainColors.get(this.terrain)!;
@@ -617,8 +632,18 @@ export class Game {
     this.board.terrainColors = this.terrainColors;
     this.board.initializeBoard(this.dispatch);
     this.fieldTowers.clear();
-    this.dispatch(["fieldTowers", "terrain", "terrainColors"]);
+    this.dispatch(["fieldTowers", "terrain", "terrainColors", "displayModal"]);
+    this.resetEnemies();
     this.initializeEnemies();
+  };
+
+  restartJourney = () => {
+    this.displayModal = false;
+    this.currentGymLeaderIndex = 0;
+    this.badgeInventory.clear();
+    this.dispatch(["badgeInventory"]);
+    this.reset(ResetTypeEnum.HARD);
+    this.updateTerrainAndBoard();
   };
 
   // ANIMATE
@@ -797,7 +822,7 @@ export class Game {
           const healthBarEl = enemyElement.children[1].children[0] as any;
           healthBarEl.style.width = `${healthPercentage}%`;
           if (damagedEnemy.health <= 0) {
-            this.money += this.currentWaveNumber * 3;
+            this.money += (this.currentWaveNumber + 1) * 3;
             this.dispatch(["money"]);
             // Remove enemy from active and add back to unassigned
             enemyElement.hidden = true;
@@ -852,7 +877,7 @@ export class Game {
   };
 
   private resetWaveNumber = () => {
-    this.currentWaveNumber = 1;
+    this.currentWaveNumber = 0;
     this.dispatch(["currentWaveNumber"]);
   };
 

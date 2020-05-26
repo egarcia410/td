@@ -93,7 +93,7 @@ export const items = new Map<number, IItem>([
       item: "Speed Bonus",
       img: IoIosSpeedometer,
       price: 300,
-      description: "Increase attack speed of Pokémon by",
+      description: "Increase attack speed of Pokémon by 1",
       isDraggable: true,
       color: "#DCC767",
     },
