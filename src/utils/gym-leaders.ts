@@ -1,4 +1,4 @@
-import { RegionsEnum, TerrainEnum, AttackTypeEnum } from "../types";
+import { RegionsEnum, TerrainEnum } from "../types";
 import { IGymLeader } from "../types/IGymLeader";
 
 import BoulderBadge from "../assets/badges/Boulder_Badge.png";
@@ -26,7 +26,7 @@ export const gymLeaders = new Map<RegionsEnum, IGymLeader[]>([
         name: "Misty",
         location: "Cerulean City",
         terrain: TerrainEnum.WATER,
-        terrainTypes: [TerrainEnum.WATER, TerrainEnum.ICE],
+        terrainTypes: [TerrainEnum.WATER],
         badgeImg: CascadeBadge,
         badgeName: "Cascade",
       },

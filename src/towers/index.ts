@@ -89,6 +89,7 @@ import Nidorino from "./Nidorino";
 import NidoranM from "./NidoranM";
 import Nidoking from "./Nidoking";
 import Clefable from "./Clefable";
+import Clefairy from "./Clefairy";
 import Vulpix from "./Vulpix";
 import Ninetales from "./Ninetales";
 import Jigglypuff from "./Jigglypuff";
@@ -105,6 +106,7 @@ import Venomoth from "./Venomoth";
 import Diglett from "./Diglett";
 
 export {
+  Clefairy,
   Diglett,
   Venomoth,
   Venonat,

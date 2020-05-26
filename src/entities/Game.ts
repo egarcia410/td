@@ -82,7 +82,7 @@ export class Game {
     this.bullets = [];
     this.unassignedBullets = [];
     this.unassignedEnemies = [];
-    this.money = 1000;
+    this.money = 1500;
     this.inventory = new Map();
     this.message = null;
     this.maxPartySize = 4;
@@ -121,15 +121,20 @@ export class Game {
 
   private initializeEnemies = () => {
     const numOfEnemies =
-      this.playThrough * this.partyTowers.size * 6 + this.currentWaveNumber;
+      this.playThrough * Math.max(2, this.partyTowers.size) * 6 +
+      (this.currentWaveNumber + 1);
     for (let i = 0; i < numOfEnemies; i++) {
       const rarity = this.getRandomRarity();
       const currentGymLeader = this.gymLeaders[this.currentGymLeaderIndex];
       const terrainTypes = currentGymLeader.terrainTypes;
       const randomTerrainType =
         terrainTypes[Math.floor(Math.random() * terrainTypes.length)];
-      const baseTowersByTerrain = this.baseTowers.get(randomTerrainType)!;
-      const baseTowersByRarity = baseTowersByTerrain.get(rarity)!;
+      const baseTowersByTerrain =
+        this.baseTowers.get(randomTerrainType)! ||
+        this.baseTowers.get(terrainTypes[0])!;
+      const baseTowersByRarity =
+        baseTowersByTerrain.get(rarity) ||
+        baseTowersByTerrain.get(RarityEnum.COMMON)!;
       const randomIndex = Math.floor(Math.random() * baseTowersByRarity.length);
       const {
         baseId,
@@ -335,7 +340,7 @@ export class Game {
       case GameStatusEnum.COMPLETED_WAVE: {
         this.currentWaveNumber += 1;
         this.dispatch(["currentWaveNumber"]);
-        if (this.currentWaveNumber % 10 === 0) {
+        if (this.currentWaveNumber % 2 === 0) {
           this.displayModal = true;
           if (this.currentGymLeaderIndex + 1 < this.gymLeaders.length) {
             const { badgeName, badgeImg } = this.gymLeaders[
@@ -344,7 +349,8 @@ export class Game {
             this.badgeInventory.set(badgeName, badgeImg);
             this.dispatch(["badgeInventory"]);
           }
-          this.dispatch(["displayModal"]);
+          this.money += 1000;
+          this.dispatch(["displayModal", "money"]);
         }
         this.money += 200;
         this.dispatch(["money"]);

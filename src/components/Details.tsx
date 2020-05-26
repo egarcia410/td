@@ -58,7 +58,7 @@ const Details: React.FC<IDetailsProps> = ({ game, ...rest }) => {
       <Flex direction="column" alignItems="center">
         <Box as={TiWaves} aria-label="wave" color="blue.400" size="1.5rem" />
         <Text fontSize="1.25rem" fontWeight="500" color="gray.400">
-          {currentWaveNumber + 1}/{gymLeaders.length * 10}
+          {currentWaveNumber + 1}/{gymLeaders.length * 2}
         </Text>
       </Flex>
       <Flex direction="column" alignItems="center">

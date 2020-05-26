@@ -9,4 +9,7 @@ export const bulletColors = new Map([
   [AttackTypeEnum.POISON, "#A672B1"],
   [AttackTypeEnum.GROUND, "#AE9356"],
   [AttackTypeEnum.PSYCHIC, "#BB81A7"],
+  [AttackTypeEnum.BUG, "#C9CF7B"],
+  [AttackTypeEnum.FLYING, "#B2B399"],
+  [AttackTypeEnum.NORMAL, "#79776F"],
 ]);

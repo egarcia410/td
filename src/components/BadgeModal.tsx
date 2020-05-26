@@ -15,7 +15,6 @@ import {
 } from "@chakra-ui/core";
 import { Game } from "../entities";
 import { useTypedSelector } from "../hooks";
-import { ResetTypeEnum } from "../types";
 
 const BadgeImg = styled.img`
   width: 5rem;
