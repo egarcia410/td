@@ -9,4 +9,9 @@ export enum AttackTypeEnum {
   POISON = "POISON",
   PSYCHIC = "PSYCHIC",
   GROUND = "GROUND",
+  DRAGON = "DRAGON",
+  NORMAL = "NORMAL",
+  GHOST = "GHOST",
+  FIGHT = "FIGHT",
+  BUG = "BUG",
 }

@@ -1,4 +1,5 @@
 import { Cell } from "./Cell";
+import { AttackTypeEnum } from "../types";
 
 export class EnemyTower {
   id: string;
@@ -14,6 +15,7 @@ export class EnemyTower {
   component: React.FC<any>;
   enemyElement: HTMLDivElement | null;
   currentPathCell: Cell;
+  attackType: AttackTypeEnum;
   constructor(
     id: string,
     level: number,
@@ -22,7 +24,8 @@ export class EnemyTower {
     baseHealth: number,
     baseSpeed: number,
     component: React.FC<any>,
-    pathCell: Cell
+    pathCell: Cell,
+    attackType: AttackTypeEnum
   ) {
     this.id = id;
     this.level = level;
@@ -37,6 +40,7 @@ export class EnemyTower {
     this.component = component;
     this.enemyElement = null;
     this.currentPathCell = pathCell;
+    this.attackType = attackType;
   }
 
   private generateMovementSpeed = () => {

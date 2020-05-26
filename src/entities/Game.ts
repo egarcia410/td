@@ -21,6 +21,7 @@ import {
   allBaseTowers,
   getBaseTowersByRegion,
   gymLeaders,
+  attackMultiplier,
 } from "../utils";
 // Entities
 import {
@@ -48,7 +49,6 @@ export class Game {
   baseTowers: Map<TerrainEnum, Map<RarityEnum, IBaseTower[]>>;
   partyTowers: Map<string, PartyTower>;
   fieldTowers: Map<string, FieldTower>;
-  enemiesPerWave: number[];
   currentWaveNumber: number;
   enemies: EnemyTower[];
   bullets: Bullet[];
@@ -60,13 +60,14 @@ export class Game {
   maxPartySize: number;
   displayModal: boolean;
   badgeInventory: Map<string, string>;
+  playThrough: number;
   constructor(region: RegionsEnum) {
     this.listeners = new Map();
     this.status = GameStatusEnum.IDLE;
     this.gameTimer = 0;
     this.intervalId = 0;
     this.health = 100;
-    this.currentGymLeaderIndex = 6;
+    this.currentGymLeaderIndex = 0;
     this.gymLeaders = gymLeaders.get(region)!;
     this.terrain = this.gymLeaders[this.currentGymLeaderIndex].terrain;
     this.terrainColors = terrainColors.get(this.terrain)!;
@@ -76,18 +77,18 @@ export class Game {
     this.baseTowers = getBaseTowersByRegion(region);
     this.partyTowers = new Map();
     this.fieldTowers = new Map();
-    this.enemiesPerWave = [2, 2, 2, 2, 2, 2, 2, 3, 2, 2];
     this.currentWaveNumber = 0;
     this.enemies = [];
     this.bullets = [];
     this.unassignedBullets = [];
     this.unassignedEnemies = [];
-    this.money = 2200;
+    this.money = 1000;
     this.inventory = new Map();
     this.message = null;
     this.maxPartySize = 4;
     this.displayModal = false;
     this.badgeInventory = new Map();
+    this.playThrough = 1;
   }
 
   addListener = (listener: IListener) => {
@@ -119,15 +120,20 @@ export class Game {
   };
 
   private initializeEnemies = () => {
-    for (let i = 0; i < 2; i++) {
-      // TODO: Randomize number of enemies per wave
+    const numOfEnemies =
+      this.playThrough * this.partyTowers.size * 6 + this.currentWaveNumber;
+    for (let i = 0; i < numOfEnemies; i++) {
       const rarity = this.getRandomRarity();
       const baseTowersByTerrain = this.baseTowers.get(this.terrain)!;
       const baseTowersByRarity = baseTowersByTerrain.get(rarity)!;
       const randomIndex = Math.floor(Math.random() * baseTowersByRarity.length);
-      const { baseId, baseHealth, baseSpeed, component } = baseTowersByRarity[
-        randomIndex
-      ];
+      const {
+        baseId,
+        baseHealth,
+        baseSpeed,
+        component,
+        attackType,
+      } = baseTowersByRarity[randomIndex];
       const avgPartyLvl = this.partyTowers.size ? this.getAvgPartyLvl() : 1;
       const maxLevelRange = Math.ceil(avgPartyLvl) + 5;
       const minLevelRange = Math.ceil(avgPartyLvl);
@@ -144,7 +150,8 @@ export class Game {
         baseHealth,
         baseSpeed,
         component,
-        pathCell
+        pathCell,
+        attackType
       );
       this.enemies.push(enemy);
     }
@@ -324,7 +331,7 @@ export class Game {
       case GameStatusEnum.COMPLETED_WAVE: {
         this.currentWaveNumber += 1;
         this.dispatch(["currentWaveNumber"]);
-        if (this.currentWaveNumber % 1 === 0) {
+        if (this.currentWaveNumber % 10 === 0) {
           this.displayModal = true;
           if (this.currentGymLeaderIndex + 1 < this.gymLeaders.length) {
             const { badgeName, badgeImg } = this.gymLeaders[
@@ -335,7 +342,7 @@ export class Game {
           }
           this.dispatch(["displayModal"]);
         }
-        this.money += 50;
+        this.money += 200;
         this.dispatch(["money"]);
         this.deactivateGameTimer();
         break;
@@ -638,6 +645,7 @@ export class Game {
   };
 
   restartJourney = () => {
+    this.playThrough += 1;
     this.displayModal = false;
     this.currentGymLeaderIndex = 0;
     this.badgeInventory.clear();
@@ -814,15 +822,21 @@ export class Game {
         });
 
         if (damagedEnemy) {
+          this.money += 1;
+          this.dispatch(["money"]);
           partyTowerRef.incrementExp(this.dispatch);
-          damagedEnemy.health -= attack;
+          const attackMult = attackMultiplier(
+            partyTowerRef.attackType,
+            damagedEnemy.attackType
+          );
+          damagedEnemy.health -= attack * attackMult;
           const healthPercentage =
             (damagedEnemy.health / damagedEnemy.maxHealth) * 100;
           const enemyElement = damagedEnemy.enemyElement!;
           const healthBarEl = enemyElement.children[1].children[0] as any;
           healthBarEl.style.width = `${healthPercentage}%`;
           if (damagedEnemy.health <= 0) {
-            this.money += (this.currentWaveNumber + 1) * 3;
+            this.money += this.currentWaveNumber + 10;
             this.dispatch(["money"]);
             // Remove enemy from active and add back to unassigned
             enemyElement.hidden = true;

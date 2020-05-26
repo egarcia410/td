@@ -11,3 +11,4 @@ export { gymLeaders } from "./gym-leaders";
 export { items } from "./items";
 export { regionStarters } from "./region-starters";
 export { terrainColors } from "./terrain-colors";
+export { attackMultiplier, effectiveness } from "./effectiveness";
