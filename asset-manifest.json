@@ -1,0 +1,27 @@
+{
+  "files": {
+    "main.js": "/td/static/js/main.1904a98c.chunk.js",
+    "main.js.map": "/td/static/js/main.1904a98c.chunk.js.map",
+    "runtime-main.js": "/td/static/js/runtime-main.830cadd0.js",
+    "runtime-main.js.map": "/td/static/js/runtime-main.830cadd0.js.map",
+    "static/js/2.4556c79b.chunk.js": "/td/static/js/2.4556c79b.chunk.js",
+    "static/js/2.4556c79b.chunk.js.map": "/td/static/js/2.4556c79b.chunk.js.map",
+    "index.html": "/td/index.html",
+    "precache-manifest.7ab7ff7e58fc1e7b3681c3927775623a.js": "/td/precache-manifest.7ab7ff7e58fc1e7b3681c3927775623a.js",
+    "service-worker.js": "/td/service-worker.js",
+    "static/js/2.4556c79b.chunk.js.LICENSE.txt": "/td/static/js/2.4556c79b.chunk.js.LICENSE.txt",
+    "static/media/Boulder_Badge.png": "/td/static/media/Boulder_Badge.cdbba6c8.png",
+    "static/media/Cascade_Badge.png": "/td/static/media/Cascade_Badge.56a6ec88.png",
+    "static/media/Earth_Badge.png": "/td/static/media/Earth_Badge.3f8f90d8.png",
+    "static/media/Marsh_Badge.png": "/td/static/media/Marsh_Badge.9fd8d946.png",
+    "static/media/Rainbow_Badge.png": "/td/static/media/Rainbow_Badge.82f8f7cd.png",
+    "static/media/Soul_Badge.png": "/td/static/media/Soul_Badge.7ccd9b5b.png",
+    "static/media/Thunder_Badge.png": "/td/static/media/Thunder_Badge.bb14b6f3.png",
+    "static/media/Volcano_Badge.png": "/td/static/media/Volcano_Badge.bf2de797.png"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.830cadd0.js",
+    "static/js/2.4556c79b.chunk.js",
+    "static/js/main.1904a98c.chunk.js"
+  ]
+}
